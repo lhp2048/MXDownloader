@@ -168,6 +168,63 @@
         </div>
       </section>
 
+      <section class="card settings-item" :class="{ 'is-open': isOpen('workbuddy') }">
+        <button type="button" class="settings-item-row" @click="toggle('workbuddy')" :aria-expanded="isOpen('workbuddy')">
+          <span class="settings-item-icon" aria-hidden="true">🤖</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">WorkBuddy Skill</span>
+            <span class="settings-item-summary">AI 对话下载 · 一键安装脚本</span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('workbuddy')">
+          <div class="settings-fields">
+            <p class="field-hint">
+              下载安装脚本并运行，自动将 Skill 安装到 <code>~/.workbuddy/skills/mydownloader/</code>，然后重启 WorkBuddy 即可在对话中使用「下载」等指令。
+            </p>
+            <div class="skill-download-grid">
+              <a class="btn" href="{{ base_url }}/scripts/install-workbuddy-skill.sh" download>macOS / Linux 安装脚本</a>
+              <a class="btn" href="{{ base_url }}/scripts/install-workbuddy-skill.ps1" download>Windows 安装脚本</a>
+              <a class="btn secondary" href="{{ base_url }}/skills/mydownloader/bundle.zip" download>Skill 技能包 (.zip)</a>
+              <a class="btn secondary" href="{{ base_url }}/skills/mydownloader/SKILL.md" download>SKILL.md</a>
+            </div>
+            <div class="install-help" x-data="{ tab: 'mac', open: true }">
+              <button type="button" class="install-help-toggle" @click="open = !open" :aria-expanded="open">
+                <span>安装说明</span>
+                <span class="settings-item-chevron" :class="{ 'is-open': open }" aria-hidden="true"></span>
+              </button>
+              <div class="install-help-body" x-show="open" x-cloak>
+                <div class="install-help-tabs">
+                  <button type="button" class="install-tab" :class="{ active: tab === 'mac' }" @click="tab = 'mac'">macOS / Linux</button>
+                  <button type="button" class="install-tab" :class="{ active: tab === 'win' }" @click="tab = 'win'">Windows</button>
+                  <button type="button" class="install-tab" :class="{ active: tab === 'manual' }" @click="tab = 'manual'">手动 / 上传</button>
+                </div>
+                <div x-show="tab === 'mac'" class="install-help-content">
+                  <p class="install-help-lead">下载脚本后执行，或一行命令在线安装：</p>
+                  <pre class="install-code">chmod +x install-workbuddy-skill.sh
+./install-workbuddy-skill.sh {{ base_url }}
+
+# 或一行命令
+curl -fsSL {{ base_url }}/scripts/install-workbuddy-skill.sh | bash -s -- {{ base_url }}</pre>
+                </div>
+                <div x-show="tab === 'win'" class="install-help-content">
+                  <p class="install-help-lead">下载 .ps1 后右键「使用 PowerShell 运行」，或在 PowerShell 中：</p>
+                  <pre class="install-code">Set-ExecutionPolicy -Scope Process Bypass
+.\install-workbuddy-skill.ps1 -BaseUrl "{{ base_url }}"</pre>
+                </div>
+                <div x-show="tab === 'manual'" class="install-help-content">
+                  <p class="install-help-lead">也可下载 Skill 技能包，解压到 WorkBuddy 技能目录，或在 WorkBuddy 技能面板上传 zip：</p>
+                  <pre class="install-code">~/.workbuddy/skills/mydownloader/
+├── SKILL.md
+└── references/api.md</pre>
+                  <p class="field-hint">安装后请完全退出并重启 WorkBuddy。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="card settings-item" :class="{ 'is-open': isOpen('security') }">
         <button type="button" class="settings-item-row" @click="toggle('security')" :aria-expanded="isOpen('security')">
           <span class="settings-item-icon" aria-hidden="true">🔐</span>

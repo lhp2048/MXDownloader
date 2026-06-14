@@ -11,6 +11,7 @@ from starlette.requests import Request
 from app.api.playlists import router as playlists_router
 from app.api.routes import router as api_router
 from app.api.files import router as files_router
+from app.api.skills import router as skills_router
 from app.api.web import router as web_router
 from app.config import settings
 from app.db import init_db
@@ -53,6 +54,7 @@ app.mount("/static", StaticFiles(directory=str(WEB_DIR / "static")), name="stati
 app.include_router(files_router)
 app.include_router(playlists_router)
 app.include_router(api_router)
+app.include_router(skills_router)
 app.include_router(web_router)
 
 

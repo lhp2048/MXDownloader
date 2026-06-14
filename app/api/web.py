@@ -113,10 +113,11 @@ async def media_page(request: Request) -> HTMLResponse:
 
 @router.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request) -> HTMLResponse:
+    base_url = str(request.base_url).rstrip("/")
     return templates.TemplateResponse(
         request,
         "settings.html",
-        {"settings": settings},
+        {"settings": settings, "base_url": base_url},
     )
 
 
