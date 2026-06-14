@@ -1,12 +1,11 @@
 import asyncio
-import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
 import httpx
 
-from app.config import load_settings, resolve_download_dir
+from app.config import load_settings, resolve_download_dir, resolve_ytdlp_executable
 from app.utils.encoding import decode_bytes, subprocess_env
 
 
@@ -42,9 +41,7 @@ async def _run_version_cmd(cmd: list[str]) -> str:
 async def get_ytdlp_status(settings=None) -> EngineStatusInfo:
     s = settings or load_settings()
     path_cfg = s.engines.ytdlp_path
-    resolved = shutil.which(path_cfg)
-    if not resolved and Path(path_cfg).exists():
-        resolved = str(Path(path_cfg).resolve())
+    resolved = resolve_ytdlp_executable(path_cfg)
 
     info = EngineStatusInfo(
         name="ytdlp",
@@ -57,7 +54,7 @@ async def get_ytdlp_status(settings=None) -> EngineStatusInfo:
         config={"ytdlp_path": path_cfg},
     )
 
-    if not resolved:
+    if not resolved or not Path(resolved).is_file():
         info.message = "未找到 yt-dlp，请安装或配置正确路径"
         return info
 

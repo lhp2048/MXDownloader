@@ -103,7 +103,27 @@ pip install yt-dlp
 YTDLP_VENV="$PROJECT_ROOT/.venv/bin/yt-dlp"
 if [[ -x "$YTDLP_VENV" ]]; then
     log "yt-dlp 已安装: $YTDLP_VENV"
-    log "若设置页检测不到，将 ytdlp_path 设为: $YTDLP_VENV"
+    python - <<'PY'
+from pathlib import Path
+import yaml
+
+root = Path(".")
+cfg_path = root / "config.yaml"
+venv_ytdlp = root / ".venv" / "bin" / "yt-dlp"
+if not venv_ytdlp.is_file():
+    raise SystemExit(0)
+data = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+engines = data.setdefault("engines", {})
+current = (engines.get("ytdlp_path") or "yt-dlp").strip()
+if current in ("yt-dlp", ""):
+    engines["ytdlp_path"] = str(venv_ytdlp.resolve())
+    cfg_path.write_text(
+        yaml.safe_dump(data, allow_unicode=True, default_flow_style=False),
+        encoding="utf-8",
+    )
+    print(f"  已写入 config.yaml engines.ytdlp_path = {engines['ytdlp_path']}")
+PY
+    log "若设置页仍显示旧路径，将 ytdlp_path 设为: $YTDLP_VENV"
 fi
 
 mkdir -p "$PROJECT_ROOT/downloads" "$PROJECT_ROOT/logs" "$PROJECT_ROOT/data"

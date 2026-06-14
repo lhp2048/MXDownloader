@@ -278,6 +278,26 @@ rm -rf .venv
 ./scripts/install-mac.sh --skip-brew
 ```
 
+**Q: yt-dlp 提示 Python 3.9 deprecated，或组件页显示异常？**
+
+`config.yaml` 里若 `engines.ytdlp_path` 为 `yt-dlp`，会走系统 PATH，可能命中 macOS 自带的旧 Python 3.9 环境。
+
+确认 venv 内 yt-dlp 正常：
+
+```bash
+~/MXDownloader/.venv/bin/yt-dlp --version
+~/MXDownloader/.venv/bin/python --version
+```
+
+将配置改为 venv 路径（或重新运行 install-mac 会自动写入）：
+
+```yaml
+engines:
+  ytdlp_path: /Users/muxin/MXDownloader/.venv/bin/yt-dlp
+```
+
+重启服务后，组件页应显示可用。
+
 **Q: pip install 卡在 `cryptography` / `Preparing metadata` 很久？**
 
 生产部署**不需要**在本机装 Cursor MCP。`mcp` 已改为可选依赖，默认 `install-mac.sh` 不会安装它。

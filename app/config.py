@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,29 @@ DOWNLOAD_DIR = PROJECT_ROOT / "downloads"
 
 def default_download_dir() -> str:
     return str(DOWNLOAD_DIR.resolve())
+
+
+DEFAULT_YTDLP_PATH = "yt-dlp"
+VENV_YTDLP_PATH = PROJECT_ROOT / ".venv" / "bin" / "yt-dlp"
+
+
+def resolve_ytdlp_executable(path_cfg: str | None = None) -> str:
+    """Resolve yt-dlp binary; prefer project .venv when config uses default name."""
+    raw = (path_cfg or DEFAULT_YTDLP_PATH).strip() or DEFAULT_YTDLP_PATH
+
+    if raw != DEFAULT_YTDLP_PATH:
+        p = Path(raw)
+        if p.is_file():
+            return str(p.resolve())
+        found = shutil.which(raw)
+        if found:
+            return found
+        return raw
+
+    if VENV_YTDLP_PATH.is_file():
+        return str(VENV_YTDLP_PATH.resolve())
+    found = shutil.which(DEFAULT_YTDLP_PATH)
+    return found or raw
 
 
 def resolve_download_dir(path: str | None = None) -> str:

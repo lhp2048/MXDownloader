@@ -1,10 +1,9 @@
 import asyncio
 import re
-import shutil
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from app.config import settings
+from app.config import resolve_ytdlp_executable, settings
 from app.engines.base import DownloadEngine, EngineProgress
 from app.utils.encoding import decode_bytes, subprocess_env, title_from_task_file
 
@@ -15,17 +14,18 @@ class YtDlpEngine(DownloadEngine):
     _progress: Dict[int, EngineProgress] = {}
 
     async def is_available(self) -> bool:
-        path = settings.engines.ytdlp_path
-        if shutil.which(path):
-            return True
-        return Path(path).exists()
+        path = resolve_ytdlp_executable(settings.engines.ytdlp_path)
+        return Path(path).is_file()
+
+    def _ytdlp_bin(self) -> str:
+        return resolve_ytdlp_executable(settings.engines.ytdlp_path)
 
     def _build_cmd(
         self, url: str, output_dir: str, task_id: int, options: dict[str, Any]
     ) -> list[str]:
         out_template = str(Path(output_dir) / f"task_{task_id}_%(title)s.%(ext)s")
         cmd = [
-            settings.engines.ytdlp_path,
+            self._ytdlp_bin(),
             "--newline",
             "--no-progress",
             "--progress-template",
