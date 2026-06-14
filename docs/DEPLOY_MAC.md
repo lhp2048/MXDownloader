@@ -34,9 +34,12 @@
 ## 一、环境要求
 
 - macOS 12+（Monterey 或更高推荐）
-- **Python 3.10+**（`python3 --version`）
+- **Python 3.10+**（`python3 --version`）— **系统自带的 3.9.x 不可用**
 - 磁盘：下载目录预留足够空间（默认 `项目/downloads`）
 - 可选：**Homebrew**、**Docker Desktop**
+
+> **常见情况**：Mac 自带 `python3` 为 3.9.6，需用 Homebrew 安装新版：
+> `brew install python@3.12`，然后重新运行 `./scripts/install-mac.sh`。
 
 ---
 
@@ -245,6 +248,17 @@ tail -f logs/launchd.out.log logs/launchd.err.log
 ---
 
 ## 七、常见问题
+
+**Q: pip install 报错 requires Python >=3.10，当前 3.9.6？**
+
+系统自带 Python 太旧。安装并使用 Homebrew Python：
+
+```bash
+brew install python@3.12
+# 若之前用 3.9 建过 venv，先删除
+rm -rf .venv
+./scripts/install-mac.sh
+```
 
 **Q: 双击 `start.command` 提示无法打开？**
 
