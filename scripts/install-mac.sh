@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # MyDownloader macOS 环境安装（开发 / 生产首次部署）
-# 用法: ./scripts/install-mac.sh [--with-docker] [--skip-brew]
+# 用法: ./scripts/install-mac.sh [--with-docker] [--skip-brew] [--with-mcp]
 
 set -euo pipefail
 
 WITH_DOCKER=0
 SKIP_BREW=0
+WITH_MCP=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -17,10 +18,15 @@ while [[ $# -gt 0 ]]; do
             SKIP_BREW=1
             shift
             ;;
+        --with-mcp)
+            WITH_MCP=1
+            shift
+            ;;
         -h|--help)
-            echo "用法: $0 [--with-docker] [--skip-brew]"
+            echo "用法: $0 [--with-docker] [--skip-brew] [--with-mcp]"
             echo "  --with-docker  安装后启动 docker-compose（aria2 + Alist）"
             echo "  --skip-brew    不通过 Homebrew 安装 python / yt-dlp / aria2"
+            echo "  --with-mcp     安装 Cursor MCP 依赖（会拉取 cryptography，macOS 12 上较慢）"
             exit 0
             ;;
         *)
@@ -85,9 +91,13 @@ source "$PROJECT_ROOT/.venv/bin/activate"
 
 log "venv Python: $(python -c 'import sys; print(sys.version.split()[0])') ($(command -v python))"
 
-log "安装 Python 依赖..."
+log "安装 Python 依赖（不含 MCP，避免 macOS 12 编译 cryptography）..."
 pip install -U pip setuptools wheel
 pip install -e .
+if [[ "$WITH_MCP" -eq 1 ]]; then
+    log "安装 MCP 可选依赖..."
+    pip install -e ".[mcp]"
+fi
 pip install yt-dlp
 
 YTDLP_VENV="$PROJECT_ROOT/.venv/bin/yt-dlp"

@@ -278,6 +278,21 @@ rm -rf .venv
 ./scripts/install-mac.sh --skip-brew
 ```
 
+**Q: pip install 卡在 `cryptography` / `Preparing metadata` 很久？**
+
+生产部署**不需要**在本机装 Cursor MCP。`mcp` 已改为可选依赖，默认 `install-mac.sh` 不会安装它。
+
+若当前安装已卡住，按 `Ctrl+C` 中断后：
+
+```bash
+cd ~/MXDownloader
+git pull
+rm -rf .venv
+./scripts/install-mac.sh --skip-brew
+```
+
+仅在 Mac 上也要跑 MCP Server 时再加 `--with-mcp`（macOS 12 上可能需编译 cryptography，较慢）。
+
 **Q: pip install 报错 requires Python >=3.10，当前 3.9.6？**
 
 系统自带 Python 太旧。安装并使用 Homebrew Python：

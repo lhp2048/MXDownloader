@@ -31,6 +31,8 @@ git clone git@github.com:lhp2048/MXDownloader.git
 cd MXDownloader
 pip install -e .
 pip install yt-dlp
+# Cursor MCP（可选，会安装 mcp + cryptography）
+pip install -e ".[mcp]"
 ```
 
 ### 2. 安装下载组件（可选）
@@ -148,6 +150,8 @@ cp -r skills/mydownloader ~/.workbuddy/skills/mydownloader
 支持下载任务与**播放列表管理**（见 `skills/mydownloader/SKILL.md`）。
 
 ## Cursor MCP
+
+需先安装可选依赖：`pip install -e ".[mcp]"`
 
 ```json
 {
