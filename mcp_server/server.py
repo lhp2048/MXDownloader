@@ -7,7 +7,7 @@ from typing import Optional
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-BASE_URL = os.environ.get("MYDOWNLOADER_URL", "http://127.0.0.1:8766")
+BASE_URL = os.environ.get("MYDOWNLOADER_URL", "http://127.0.0.1:18026")
 API_KEY = os.environ.get("MYDOWNLOADER_API_KEY", "")
 
 mcp = FastMCP("mydownloader")

@@ -1,7 +1,7 @@
 # Install MyDownloader WorkBuddy Skill
 # Usage:
 #   .\scripts\install-workbuddy-skill.ps1
-#   .\scripts\install-workbuddy-skill.ps1 -BaseUrl "http://192.168.2.11:8766"
+#   .\scripts\install-workbuddy-skill.ps1 -BaseUrl "http://192.168.2.11:18026"
 
 param(
     [string]$BaseUrl = ""

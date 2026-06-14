@@ -2,8 +2,8 @@
 # 安装 MyDownloader WorkBuddy Skill
 # 用法:
 #   ./scripts/install-workbuddy-skill.sh                    # 从本仓库复制
-#   ./scripts/install-workbuddy-skill.sh http://host:8766 # 从在线服务下载
-#   curl -fsSL http://host:8766/scripts/install-workbuddy-skill.sh | bash -s -- http://host:8766
+#   ./scripts/install-workbuddy-skill.sh http://host:18026 # 从在线服务下载
+#   curl -fsSL http://host:18026/scripts/install-workbuddy-skill.sh | bash -s -- http://host:18026
 
 set -euo pipefail
 

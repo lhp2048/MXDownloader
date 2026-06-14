@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, Response
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SKILL_DIR = PROJECT_ROOT / "skills" / "mydownloader"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-DEFAULT_BASE = "http://127.0.0.1:8766"
+DEFAULT_BASE = "http://127.0.0.1:18026"
 
 router = APIRouter(tags=["skills"])
 

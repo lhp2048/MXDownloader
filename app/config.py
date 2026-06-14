@@ -75,7 +75,7 @@ class DownloadSettings(BaseSettings):
 
 class ServerSettings(BaseSettings):
     host: str = "127.0.0.1"
-    port: int = 8766
+    port: int = 18026
     api_key: str = ""
 
 

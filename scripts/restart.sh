@@ -32,12 +32,12 @@ get_port() {
     elif [[ -x "$PROJECT_ROOT/.venv/bin/python" ]]; then
         py_bin="$PROJECT_ROOT/.venv/bin/python"
     else
-        echo "8766"
+        echo "18026"
         return
     fi
     "$py_bin" -c \
         "from app.config import load_settings; print(load_settings().server.port)" \
-        2>/dev/null || echo "8766"
+        2>/dev/null || echo "18026"
 }
 
 stop_port_listener() {

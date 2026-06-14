@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.routes import verify_api_key
-from app.models.playlist import PlaylistCreate, PlaylistItemCreate, PlaylistItemResponse, PlaylistResponse
+from app.models.playlist import (
+    PlaylistCreate,
+    PlaylistItemCreate,
+    PlaylistItemResponse,
+    PlaylistReloadResult,
+    PlaylistResponse,
+)
 from app.services.file_manager import get_public_base_url
 from app.services.playlist_service import playlist_service
 
@@ -31,6 +37,19 @@ async def list_default_items(request: Request) -> list[PlaylistItemResponse]:
     return await playlist_service.list_items(default.id, _public_base(request))
 
 
+@router.post(
+    "/api/v1/playlists/default/reload",
+    response_model=PlaylistReloadResult,
+    dependencies=[Depends(verify_api_key)],
+)
+async def reload_default_playlist() -> PlaylistReloadResult:
+    try:
+        default = await playlist_service.get_default_playlist()
+        return await playlist_service.reload_playlist_from_disk(default.id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
 @router.get("/api/v1/playlists/{playlist_id}", response_model=PlaylistResponse)
 async def get_playlist(playlist_id: int) -> PlaylistResponse:
     playlist = await playlist_service.get_playlist(playlist_id)
@@ -48,6 +67,18 @@ async def list_playlist_items(
 ) -> list[PlaylistItemResponse]:
     try:
         return await playlist_service.list_items(playlist_id, _public_base(request))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post(
+    "/api/v1/playlists/{playlist_id}/reload",
+    response_model=PlaylistReloadResult,
+    dependencies=[Depends(verify_api_key)],
+)
+async def reload_playlist(playlist_id: int) -> PlaylistReloadResult:
+    try:
+        return await playlist_service.reload_playlist_from_disk(playlist_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

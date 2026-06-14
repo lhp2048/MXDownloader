@@ -62,8 +62,8 @@ chmod +x scripts/install-mac.sh scripts/start.sh start.command
 ./scripts/start.sh
 ```
 
-浏览器访问：http://127.0.0.1:8766  
-组件状态：http://127.0.0.1:8766/components
+浏览器访问：http://127.0.0.1:18026  
+组件状态：http://127.0.0.1:18026/components
 
 ---
 
@@ -155,7 +155,7 @@ volumes:
 ```yaml
 server:
   host: 0.0.0.0          # 局域网可访问；仅本机用 127.0.0.1
-  port: 8766
+  port: 18026
   api_key: "请设置强密钥"  # 生产务必设置
 
 download:
@@ -164,7 +164,7 @@ download:
 
 files:
   public_access: true
-  public_base_url: "http://192.168.x.x:8766"  # 局域网 IP 或域名
+  public_base_url: "http://192.168.x.x:18026"  # 局域网 IP 或域名
 ```
 
 Web 设置页可保存 API Key；浏览器端会写入 `localStorage` 供管理接口使用。
@@ -239,7 +239,7 @@ tail -f logs/launchd.out.log logs/launchd.err.log
 
 | 检查项 | 命令 / 地址 |
 |--------|-------------|
-| 健康检查 | `curl http://127.0.0.1:8766/health` |
+| 健康检查 | `curl http://127.0.0.1:18026/health` |
 | 组件状态 | 打开 `/components`，yt-dlp / aria2 / alist 应为可用 |
 | 试下载 | 仪表盘粘贴 B 站 / YouTube 链接 |
 | 文件管理 | `/files` 列表与 `/files/xxx` 外链下载 |
@@ -337,7 +337,7 @@ xattr -d com.apple.quarantine start.command  # 若被 Gatekeeper 拦截
 
 **Q: 其他设备无法访问？**
 
-`server.host` 须为 `0.0.0.0`，并检查 macOS 防火墙是否放行 8766。
+`server.host` 须为 `0.0.0.0`，并检查 macOS 防火墙是否放行 18026。
 
 **Q: 与 Windows 开发环境差异？**
 

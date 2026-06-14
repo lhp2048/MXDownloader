@@ -54,7 +54,7 @@ pip install -e ".[mcp]"
 ```yaml
 server:
   host: 127.0.0.1   # 局域网访问改为 0.0.0.0
-  port: 8766
+  port: 18026
   api_key: ""       # 生产环境建议设置
 
 download:
@@ -93,7 +93,7 @@ engines:
 
 或双击 `install-launchd.command`、`restart.command`。
 
-访问：**http://127.0.0.1:8766**
+访问：**http://127.0.0.1:18026**
 
 ### 5. Docker（aria2 + Alist）
 
@@ -119,21 +119,21 @@ docker compose up -d
 
 ```bash
 # 创建下载（支持整段分享文案，自动提取 URL）
-curl -X POST http://127.0.0.1:8766/api/v1/downloads \
+curl -X POST http://127.0.0.1:18026/api/v1/downloads \
   -H "Content-Type: application/json" \
   -d '{"url": "https://www.bilibili.com/video/BV1xx"}'
 
 # 任务列表
-curl http://127.0.0.1:8766/api/v1/tasks?tab=completed
+curl http://127.0.0.1:18026/api/v1/tasks?tab=completed
 
 # 默认播放列表（轮播，免 API Key）
-curl http://127.0.0.1:8766/api/v1/playlists/default/items
+curl http://127.0.0.1:18026/api/v1/playlists/default/items
 
 # 文件外链
-curl -O http://127.0.0.1:8766/files/your-video.mp4
+curl -O http://127.0.0.1:18026/files/your-video.mp4
 
 # 健康检查
-curl http://127.0.0.1:8766/health
+curl http://127.0.0.1:18026/health
 ```
 
 配置了 `api_key` 时，写操作需请求头：`X-API-Key: <your-key>`
@@ -160,7 +160,7 @@ cp -r skills/mydownloader ~/.workbuddy/skills/mydownloader
       "command": "python",
       "args": ["/path/to/MXDownloader/mcp_server/server.py"],
       "env": {
-        "MYDOWNLOADER_URL": "http://127.0.0.1:8766",
+        "MYDOWNLOADER_URL": "http://127.0.0.1:18026",
         "MYDOWNLOADER_API_KEY": ""
       }
     }

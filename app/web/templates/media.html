@@ -33,6 +33,13 @@
             <button type="button" class="secondary" @click="showAddPanel = !showAddPanel">添加媒体</button>
             <button
               type="button"
+              class="secondary"
+              @click="reloadFromDisk()"
+              :disabled="loading || !currentId"
+              title="扫描下载目录：新增本地媒体文件，移除已删除文件的条目"
+            >重新加载</button>
+            <button
+              type="button"
               class="danger"
               x-show="currentPlaylist && !currentPlaylist.is_default"
               @click="deleteCurrentPlaylist()"
@@ -41,6 +48,7 @@
           </div>
         </div>
         <p x-show="error" class="form-error" x-text="error"></p>
+        <p x-show="reloadMessage" class="form-success" x-text="reloadMessage"></p>
 
         <div class="add-media-panel" x-show="showAddPanel">
           <h3 class="panel-subtitle">可添加的媒体文件</h3>
@@ -151,6 +159,7 @@ function mediaPage() {
     loading: false,
     error: '',
     showAddPanel: false,
+    reloadMessage: '',
     async init() {
       await this.loadPlaylists();
       await this.loadMediaFiles();
@@ -176,6 +185,7 @@ function mediaPage() {
       if (!this.currentId) return;
       this.loading = true;
       this.error = '';
+      this.reloadMessage = '';
       try {
         const res = await fetch(`/api/v1/playlists/${this.currentId}/items`);
         if (!res.ok) {
@@ -183,6 +193,30 @@ function mediaPage() {
           throw new Error(data.detail || '加载失败');
         }
         this.items = await res.json();
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async reloadFromDisk() {
+      if (!this.currentId) return;
+      this.loading = true;
+      this.error = '';
+      this.reloadMessage = '';
+      try {
+        const res = await fetch(`/api/v1/playlists/${this.currentId}/reload`, {
+          method: 'POST',
+          headers: apiHeaders(),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.detail || '重新加载失败');
+        }
+        this.reloadMessage = data.message || '已重新加载';
+        await this.refresh();
+        await this.loadPlaylists();
+        await this.loadMediaFiles();
       } catch (e) {
         this.error = e.message;
       } finally {

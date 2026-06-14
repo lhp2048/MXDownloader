@@ -11,6 +11,7 @@ from app.models.playlist import (
     PlaylistItemORM,
     PlaylistItemResponse,
     PlaylistORM,
+    PlaylistReloadResult,
     PlaylistResponse,
 )
 from app.models.task import TaskORM, TaskStatus
@@ -60,6 +61,19 @@ class PlaylistService:
             item_count=count,
             created_at=playlist.created_at,
         )
+
+    def _scan_media_rel_paths(self) -> set[str]:
+        root = get_download_root()
+        paths: set[str] = set()
+        if not root.exists():
+            return paths
+        for path in root.rglob("*"):
+            if not path.is_file() or path.name.startswith("."):
+                continue
+            if not is_media_path(path):
+                continue
+            paths.add(path.relative_to(root).as_posix())
+        return paths
 
     async def ensure_default_playlist(self) -> PlaylistORM:
         async with async_session() as session:
@@ -261,6 +275,63 @@ class PlaylistService:
             )
             items = result.scalars().all()
             return [self._item_to_response(item, public_base) for item in items]
+
+    async def reload_playlist_from_disk(self, playlist_id: int) -> PlaylistReloadResult:
+        disk_paths = self._scan_media_rel_paths()
+        added = 0
+        removed = 0
+        item_count = 0
+
+        async with async_session() as session:
+            playlist = await session.get(PlaylistORM, playlist_id)
+            if not playlist:
+                raise ValueError("播放列表不存在")
+
+            result = await session.execute(
+                select(PlaylistItemORM).where(PlaylistItemORM.playlist_id == playlist_id)
+            )
+            items = result.scalars().all()
+            existing_rels = {item.rel_path: item for item in items}
+
+            for rel_path, item in existing_rels.items():
+                if rel_path not in disk_paths:
+                    await session.delete(item)
+                    removed += 1
+
+            for rel_path in sorted(disk_paths):
+                if rel_path in existing_rels:
+                    continue
+                if await self._add_item_if_new(
+                    session,
+                    playlist_id,
+                    rel_path,
+                    media_display_name(rel_path),
+                    None,
+                ):
+                    added += 1
+
+            await session.commit()
+
+            count_result = await session.execute(
+                select(func.count(PlaylistItemORM.id)).where(
+                    PlaylistItemORM.playlist_id == playlist_id
+                )
+            )
+            item_count = count_result.scalar() or 0
+
+        parts: list[str] = []
+        if added:
+            parts.append(f"新增 {added} 个")
+        if removed:
+            parts.append(f"移除 {removed} 个")
+        message = "、".join(parts) if parts else "已与本地目录同步，无变更"
+
+        return PlaylistReloadResult(
+            added=added,
+            removed=removed,
+            item_count=item_count,
+            message=message,
+        )
 
     async def add_item(
         self,

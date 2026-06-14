@@ -77,3 +77,10 @@ class PlaylistResponse(BaseModel):
     is_default: bool = False
     item_count: int = 0
     created_at: Optional[datetime] = None
+
+
+class PlaylistReloadResult(BaseModel):
+    added: int = 0
+    removed: int = 0
+    item_count: int = 0
+    message: str = ""

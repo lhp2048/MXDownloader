@@ -1,6 +1,6 @@
 # MyDownloader API Reference
 
-Base URL: `http://127.0.0.1:8766`
+Base URL: `http://127.0.0.1:18026`
 
 ## Authentication
 
@@ -190,7 +190,7 @@ Each item includes `public_url` for direct playback:
   "media_type": "video",
   "task_id": 3,
   "sort_order": 1,
-  "public_url": "http://127.0.0.1:8766/files/video.mp4",
+  "public_url": "http://127.0.0.1:18026/files/video.mp4",
   "exists": true,
   "added_at": "2026-06-14T10:00:00"
 }
@@ -229,6 +229,26 @@ Body: { "rel_path": "subdir/video.mp4" }
 
 ```
 DELETE /api/v1/playlists/{id}/items/{item_id}
+```
+
+### Reload from Disk
+
+Scan the download directory and sync the playlist (add new media files, remove entries whose files were deleted). Does not modify download tasks.
+
+```
+POST /api/v1/playlists/{id}/reload
+POST /api/v1/playlists/default/reload
+```
+
+Response:
+
+```json
+{
+  "added": 2,
+  "removed": 1,
+  "item_count": 5,
+  "message": "新增 2 个、移除 1 个"
+}
 ```
 
 ## MCP Tools (Cursor)

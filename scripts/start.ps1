@@ -24,7 +24,7 @@ function Get-ServerPort {
         $port = python -c "from app.config import load_settings; print(load_settings().server.port)"
         return [int]($port.Trim())
     } catch {
-        return 8766
+        return 18026
     }
 }
 

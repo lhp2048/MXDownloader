@@ -60,7 +60,7 @@ fi
 
 PYTHON_BIN="$RESOLVED_PYTHON_BIN"
 
-PORT="$(get_config_value "from app.config import load_settings; print(load_settings().server.port)" "8766")"
+PORT="$(get_config_value "from app.config import load_settings; print(load_settings().server.port)" "18026")"
 HOST="$(get_config_value "from app.config import load_settings; print(load_settings().server.host)" "127.0.0.1")"
 
 write_log "========================================"
