@@ -1,0 +1,22 @@
+server:
+  host: 127.0.0.1
+  port: 8766
+  api_key: ""
+
+download:
+  default_dir: downloads
+  max_concurrent: 3
+
+files:
+  public_access: true
+  public_base_url: ""
+
+engines:
+  ytdlp_path: yt-dlp
+  aria2:
+    rpc_url: http://127.0.0.1:6800/jsonrpc
+    secret: ""
+  alist:
+    enabled: false
+    url: http://127.0.0.1:5244
+    token: ""

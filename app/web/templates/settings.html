@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}设置 - MyDownloader{% endblock %}
+{% block content %}
+<div class="page-stack settings-page" x-data="settingsForm()" x-init="load()">
+  <div class="card card-static settings-topbar">
+    <div class="panel-toolbar">
+      <div>
+        <h2 class="settings-page-title">系统设置</h2>
+        <p class="settings-page-desc">点击条目展开详细配置</p>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="secondary" @click="checkHealth()" :disabled="healthLoading">
+          <span x-text="healthLoading ? '检测中...' : '检测引擎'"></span>
+        </button>
+        <button type="button" @click="save()" :disabled="saving">
+          <span x-text="saving ? '保存中...' : '保存设置'"></span>
+        </button>
+      </div>
+    </div>
+    <p
+      x-show="message"
+      class="form-message"
+      :class="messageOk ? 'form-message-ok' : 'form-message-err'"
+      x-text="message"
+    ></p>
+    <div class="settings-health-strip" x-show="health" x-transition>
+      <div class="health-chip" :class="health?.engines?.ytdlp ? 'health-chip-ok' : 'health-chip-fail'">
+        <span class="health-chip-label">yt-dlp</span>
+        <span x-text="health?.engines?.ytdlp ? '可用' : '不可用'"></span>
+      </div>
+      <div class="health-chip" :class="health?.engines?.aria2 ? 'health-chip-ok' : 'health-chip-fail'">
+        <span class="health-chip-label">aria2</span>
+        <span x-text="health?.engines?.aria2 ? '可用' : '不可用'"></span>
+      </div>
+      <div class="health-chip" :class="health?.engines?.alist ? 'health-chip-ok' : 'health-chip-fail'">
+        <span class="health-chip-label">alist</span>
+        <span x-text="health?.engines?.alist ? '可用' : '不可用'"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-panel scroll-panel-padded settings-scroll">
+    <div class="settings-list">
+      <section class="card settings-item" :class="{ 'is-open': isOpen('download') }">
+        <button type="button" class="settings-item-row" @click="toggle('download')" :aria-expanded="isOpen('download')">
+          <span class="settings-item-icon" aria-hidden="true">📥</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">下载</span>
+            <span class="settings-item-summary" x-text="summaryDownload()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('download')">
+          <div class="settings-fields">
+            <div class="field">
+              <label for="set-download-dir">默认下载目录</label>
+              <p class="field-hint">相对路径基于项目根目录，或使用绝对路径</p>
+              <textarea id="set-download-dir" rows="2" x-model="form.download.default_dir"></textarea>
+            </div>
+            <div class="field field-inline">
+              <label for="set-max-concurrent">最大并发数</label>
+              <input id="set-max-concurrent" type="number" class="input-number" x-model.number="form.download.max_concurrent" min="1" max="20">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card settings-item" :class="{ 'is-open': isOpen('ytdlp') }">
+        <button type="button" class="settings-item-row" @click="toggle('ytdlp')" :aria-expanded="isOpen('ytdlp')">
+          <span class="settings-item-icon" aria-hidden="true">🎬</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">yt-dlp</span>
+            <span class="settings-item-summary" x-text="summaryYtdlp()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('ytdlp')">
+          <div class="settings-fields">
+            <div class="field">
+              <label for="set-ytdlp-path">可执行文件路径</label>
+              <p class="field-hint">在 PATH 中可直接填写 yt-dlp</p>
+              <textarea id="set-ytdlp-path" rows="2" x-model="form.engines.ytdlp_path"></textarea>
+            </div>
+            {% include "partials/install_help_ytdlp.html" %}
+          </div>
+        </div>
+      </section>
+
+      <section class="card settings-item" :class="{ 'is-open': isOpen('aria2') }">
+        <button type="button" class="settings-item-row" @click="toggle('aria2')" :aria-expanded="isOpen('aria2')">
+          <span class="settings-item-icon" aria-hidden="true">⚡</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">aria2</span>
+            <span class="settings-item-summary" x-text="summaryAria2()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('aria2')">
+          <div class="settings-fields">
+            <div class="field">
+              <label for="set-aria2-url">RPC URL</label>
+              <textarea id="set-aria2-url" rows="2" x-model="form.engines.aria2.rpc_url"></textarea>
+            </div>
+            <div class="field">
+              <label for="set-aria2-secret">RPC Secret</label>
+              <p class="field-hint">与 aria2 配置中的 secret 一致，无则留空</p>
+              <textarea id="set-aria2-secret" rows="2" x-model="form.engines.aria2.secret"></textarea>
+            </div>
+            {% include "partials/install_help_aria2.html" %}
+          </div>
+        </div>
+      </section>
+
+      <section class="card settings-item" :class="{ 'is-open': isOpen('alist') }">
+        <button type="button" class="settings-item-row" @click="toggle('alist')" :aria-expanded="isOpen('alist')">
+          <span class="settings-item-icon" aria-hidden="true">☁️</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">Alist</span>
+            <span class="settings-item-summary" x-text="summaryAlist()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('alist')">
+          <div class="settings-fields">
+            <div class="field field-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" x-model="form.engines.alist.enabled">
+                <span class="toggle-text">启用 Alist 引擎</span>
+              </label>
+            </div>
+            <div class="field">
+              <label for="set-alist-url">服务地址</label>
+              <textarea id="set-alist-url" rows="2" x-model="form.engines.alist.url"></textarea>
+            </div>
+            <div class="field">
+              <label for="set-alist-token">Token</label>
+              <p class="field-hint">Alist 后台获取的管理员 Token</p>
+              <textarea id="set-alist-token" rows="2" x-model="form.engines.alist.token"></textarea>
+            </div>
+            {% include "partials/install_help_alist.html" %}
+          </div>
+        </div>
+      </section>
+
+      <section class="card settings-item" :class="{ 'is-open': isOpen('files') }">
+        <button type="button" class="settings-item-row" @click="toggle('files')" :aria-expanded="isOpen('files')">
+          <span class="settings-item-icon" aria-hidden="true">📁</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">文件服务</span>
+            <span class="settings-item-summary" x-text="summaryFiles()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('files')">
+          <div class="settings-fields">
+            <div class="field field-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" x-model="form.files.public_access">
+                <span class="toggle-text">允许外链直接下载（/files/…）</span>
+              </label>
+            </div>
+            <div class="field">
+              <label for="set-public-base">外链基础 URL</label>
+              <p class="field-hint">留空则使用当前访问地址；局域网可填 http://IP:8766</p>
+              <textarea id="set-public-base" rows="2" x-model="form.files.public_base_url" placeholder="http://192.168.1.100:8766"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card settings-item" :class="{ 'is-open': isOpen('security') }">
+        <button type="button" class="settings-item-row" @click="toggle('security')" :aria-expanded="isOpen('security')">
+          <span class="settings-item-icon" aria-hidden="true">🔐</span>
+          <div class="settings-item-main">
+            <span class="settings-item-title">安全</span>
+            <span class="settings-item-summary" x-text="summarySecurity()"></span>
+          </div>
+          <span class="settings-item-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="settings-item-body" x-show="isOpen('security')">
+          <div class="settings-fields">
+            <div class="field">
+              <label for="set-api-key">API Key</label>
+              <p class="field-hint">留空则不校验；保存后同步到浏览器本地</p>
+              <textarea id="set-api-key" rows="2" x-model="form.server.api_key" @change="saveApiKey()"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function settingsForm() {
+  return {
+    form: {
+      server: { api_key: '' },
+      download: { default_dir: '', max_concurrent: 3 },
+      files: { public_access: true, public_base_url: '' },
+      engines: {
+        ytdlp_path: 'yt-dlp',
+        aria2: { rpc_url: '', secret: '' },
+        alist: { enabled: false, url: '', token: '' },
+      },
+    },
+    openSection: null,
+    health: null,
+    healthLoading: false,
+    saving: false,
+    message: '',
+    messageOk: true,
+    isOpen(key) {
+      return this.openSection === key;
+    },
+    toggle(key) {
+      this.openSection = this.openSection === key ? null : key;
+    },
+    truncate(text, max) {
+      if (!text) return '';
+      return text.length > max ? text.slice(0, max) + '…' : text;
+    },
+    summaryDownload() {
+      const dir = this.form.download?.default_dir || 'downloads';
+      const n = this.form.download?.max_concurrent ?? 3;
+      return `${this.truncate(dir, 48)} · 并发 ${n}`;
+    },
+    summaryYtdlp() {
+      return this.form.engines?.ytdlp_path || 'yt-dlp';
+    },
+    summaryAria2() {
+      const url = this.form.engines?.aria2?.rpc_url;
+      return url ? this.truncate(url, 56) : '未配置 RPC';
+    },
+    summaryAlist() {
+      if (!this.form.engines?.alist?.enabled) return '未启用';
+      const url = this.form.engines.alist.url;
+      return url ? this.truncate(url, 56) : '已启用，未填地址';
+    },
+    summaryFiles() {
+      const pub = this.form.files?.public_access;
+      const base = this.form.files?.public_base_url;
+      const access = pub ? '外链已开启' : '外链需鉴权';
+      return base ? `${access} · ${this.truncate(base, 32)}` : access;
+    },
+    summarySecurity() {
+      const key = this.form.server?.api_key;
+      return key ? 'API Key 已设置' : '未设置 API Key';
+    },
+    headers() {
+      const h = { 'Content-Type': 'application/json' };
+      const apiKey = localStorage.getItem('api_key');
+      if (apiKey) h['X-API-Key'] = apiKey;
+      return h;
+    },
+    async load() {
+      const res = await fetch('/api/v1/settings', { headers: this.headers() });
+      this.form = await res.json();
+      if (!this.form.files) {
+        this.form.files = { public_access: true, public_base_url: '' };
+      }
+      const stored = localStorage.getItem('api_key');
+      if (stored) this.form.server.api_key = stored;
+    },
+    saveApiKey() {
+      localStorage.setItem('api_key', this.form.server.api_key || '');
+    },
+    async save() {
+      this.saving = true;
+      this.message = '';
+      try {
+        const res = await fetch('/api/v1/settings', {
+          method: 'PUT',
+          headers: this.headers(),
+          body: JSON.stringify(this.form),
+        });
+        if (!res.ok) throw new Error('保存失败');
+        this.messageOk = true;
+        this.message = '设置已保存';
+        this.saveApiKey();
+      } catch (e) {
+        this.messageOk = false;
+        this.message = e.message;
+      } finally {
+        this.saving = false;
+      }
+    },
+    async checkHealth() {
+      this.healthLoading = true;
+      try {
+        const res = await fetch('/health');
+        this.health = await res.json();
+      } catch (e) {
+        this.messageOk = false;
+        this.message = '健康检测失败';
+      } finally {
+        this.healthLoading = false;
+      }
+    },
+  };
+}
+</script>
+{% endblock %}

@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}多媒体 - MyDownloader{% endblock %}
+{% block content %}
+<div class="page-stack media-page" x-data="mediaPage()" x-init="init()">
+  <div class="media-layout">
+    <aside class="card media-sidebar">
+      <div class="panel-toolbar">
+        <h2>播放列表</h2>
+        <button type="button" class="small secondary" @click="createPlaylist()">新建</button>
+      </div>
+      <div class="playlist-list scroll-panel">
+        <template x-for="pl in playlists" :key="pl.id">
+          <button
+            type="button"
+            class="playlist-item"
+            :class="{ active: pl.id === currentId }"
+            @click="selectPlaylist(pl.id)"
+          >
+            <span class="playlist-name" x-text="pl.name"></span>
+            <span class="playlist-count" x-text="pl.item_count"></span>
+          </button>
+        </template>
+        <p x-show="playlists.length === 0" class="empty-hint">暂无播放列表</p>
+      </div>
+      <p class="files-hint muted">默认列表会自动收录下载完成的视频/音频</p>
+    </aside>
+
+    <div class="media-main page-stack">
+      <div class="card card-static">
+        <div class="panel-toolbar">
+          <h2 x-text="currentPlaylist?.name || '播放列表'"></h2>
+          <div class="toolbar-actions">
+            <button type="button" class="secondary" @click="showAddPanel = !showAddPanel">添加媒体</button>
+            <button
+              type="button"
+              class="danger"
+              x-show="currentPlaylist && !currentPlaylist.is_default"
+              @click="deleteCurrentPlaylist()"
+            >删除列表</button>
+            <button type="button" class="secondary" @click="refresh()" :disabled="loading">刷新</button>
+          </div>
+        </div>
+        <p x-show="error" class="form-error" x-text="error"></p>
+
+        <div class="add-media-panel" x-show="showAddPanel">
+          <h3 class="panel-subtitle">可添加的媒体文件</h3>
+          <div class="add-media-list scroll-panel">
+            <template x-if="mediaFiles.length === 0">
+              <p class="empty-hint">暂无媒体文件</p>
+            </template>
+            <template x-for="file in mediaFiles" :key="file.rel_path">
+              <div class="add-media-row">
+                <span class="media-type-badge" x-text="file.media_type"></span>
+                <span class="add-media-name" :title="file.name" x-text="file.name"></span>
+                <button
+                  type="button"
+                  class="small secondary"
+                  :disabled="isInCurrentPlaylist(file.rel_path)"
+                  @click="addFileToPlaylist(file.rel_path)"
+                >
+                  <span x-text="isInCurrentPlaylist(file.rel_path) ? '已添加' : '添加'"></span>
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-grow file-list-card">
+        <div class="scroll-panel">
+          <div class="task-table-wrap file-table-wrap">
+            <table class="task-table file-table media-table">
+              <thead>
+                <tr>
+                  <th class="col-name">名称</th>
+                  <th class="col-type">类型</th>
+                  <th class="col-size">大小</th>
+                  <th class="col-preview">预览</th>
+                  <th class="col-actions">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-if="loading && items.length === 0">
+                  <tr class="file-row-empty"><td colspan="5" class="empty-cell">加载中...</td></tr>
+                </template>
+                <template x-if="!loading && items.length === 0">
+                  <tr class="file-row-empty"><td colspan="5" class="empty-cell">播放列表为空</td></tr>
+                </template>
+                <template x-for="item in items" :key="item.id">
+                  <tr :class="{ 'row-missing': !item.exists }">
+                    <td class="col-name" data-label="名称">
+                      <div class="file-name-inner">
+                        <span class="file-type-icon" x-text="item.media_type === 'video' ? '🎬' : '🎵'"></span>
+                        <span class="file-name-text" :title="item.title" x-text="item.title"></span>
+                      </div>
+                    </td>
+                    <td class="col-type" data-label="类型">
+                      <span class="media-type-badge" x-text="item.media_type || '-'"></span>
+                    </td>
+                    <td class="col-size" data-label="大小">
+                      <span class="file-meta" x-text="formatSize(item.size)"></span>
+                    </td>
+                    <td class="col-preview" data-label="预览">
+                      <template x-if="item.exists && item.media_type === 'video'">
+                        <video class="media-preview" controls preload="metadata" :src="item.public_url"></video>
+                      </template>
+                      <template x-if="item.exists && item.media_type === 'audio'">
+                        <audio class="media-preview-audio" controls preload="metadata" :src="item.public_url"></audio>
+                      </template>
+                      <span x-show="!item.exists" class="muted">文件缺失</span>
+                    </td>
+                    <td class="col-actions" data-label="操作">
+                      <div class="task-actions">
+                        <a
+                          x-show="item.exists"
+                          :href="item.public_url"
+                          target="_blank"
+                          rel="noopener"
+                          class="btn small secondary"
+                        >打开</a>
+                        <button type="button" class="small secondary" x-show="item.exists" @click="copyUrl(item.public_url)">复制链接</button>
+                        <button type="button" class="small danger" @click="removeItem(item)">移除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function apiHeaders(json) {
+  const h = json ? { 'Content-Type': 'application/json' } : {};
+  const apiKey = localStorage.getItem('api_key');
+  if (apiKey) h['X-API-Key'] = apiKey;
+  return h;
+}
+
+function mediaPage() {
+  return {
+    playlists: [],
+    currentId: null,
+    currentPlaylist: null,
+    items: [],
+    mediaFiles: [],
+    loading: false,
+    error: '',
+    showAddPanel: false,
+    async init() {
+      await this.loadPlaylists();
+      await this.loadMediaFiles();
+    },
+    async loadPlaylists() {
+      try {
+        const res = await fetch('/api/v1/playlists');
+        this.playlists = await res.json();
+        if (!this.currentId && this.playlists.length) {
+          const def = this.playlists.find(p => p.is_default) || this.playlists[0];
+          await this.selectPlaylist(def.id);
+        }
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+    async selectPlaylist(id) {
+      this.currentId = id;
+      this.currentPlaylist = this.playlists.find(p => p.id === id) || null;
+      await this.refresh();
+    },
+    async refresh() {
+      if (!this.currentId) return;
+      this.loading = true;
+      this.error = '';
+      try {
+        const res = await fetch(`/api/v1/playlists/${this.currentId}/items`);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '加载失败');
+        }
+        this.items = await res.json();
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async loadMediaFiles() {
+      try {
+        const res = await fetch('/api/v1/media/files');
+        this.mediaFiles = await res.json();
+      } catch {
+        this.mediaFiles = [];
+      }
+    },
+    isInCurrentPlaylist(relPath) {
+      return this.items.some(i => i.rel_path === relPath);
+    },
+    formatSize(bytes) {
+      if (!bytes) return '-';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let size = bytes;
+      let i = 0;
+      while (size >= 1024 && i < units.length - 1) {
+        size /= 1024;
+        i++;
+      }
+      return i === 0 ? `${size} B` : `${size.toFixed(1)} ${units[i]}`;
+    },
+    async createPlaylist() {
+      const name = prompt('播放列表名称');
+      if (!name || !name.trim()) return;
+      this.error = '';
+      try {
+        const res = await fetch('/api/v1/playlists', {
+          method: 'POST',
+          headers: apiHeaders(true),
+          body: JSON.stringify({ name: name.trim() }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '创建失败');
+        }
+        const pl = await res.json();
+        await this.loadPlaylists();
+        await this.selectPlaylist(pl.id);
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+    async deleteCurrentPlaylist() {
+      if (!this.currentPlaylist || this.currentPlaylist.is_default) return;
+      if (!confirm(`确定删除播放列表「${this.currentPlaylist.name}」？`)) return;
+      try {
+        const res = await fetch(`/api/v1/playlists/${this.currentId}`, {
+          method: 'DELETE',
+          headers: apiHeaders(),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '删除失败');
+        }
+        this.currentId = null;
+        this.currentPlaylist = null;
+        this.items = [];
+        await this.loadPlaylists();
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+    async addFileToPlaylist(relPath) {
+      if (!this.currentId) return;
+      this.error = '';
+      try {
+        const res = await fetch(`/api/v1/playlists/${this.currentId}/items`, {
+          method: 'POST',
+          headers: apiHeaders(true),
+          body: JSON.stringify({ rel_path: relPath }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '添加失败');
+        }
+        await this.refresh();
+        await this.loadPlaylists();
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+    async removeItem(item) {
+      if (!confirm(`从列表移除「${item.title}」？`)) return;
+      try {
+        const res = await fetch(`/api/v1/playlists/${this.currentId}/items/${item.id}`, {
+          method: 'DELETE',
+          headers: apiHeaders(),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '移除失败');
+        }
+        await this.refresh();
+        await this.loadPlaylists();
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+    async copyUrl(url) {
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        this.error = '复制失败';
+      }
+    },
+  };
+}
+</script>
+{% endblock %}

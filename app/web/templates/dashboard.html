@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}仪表盘 - MyDownloader{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <div class="card card-static" x-data="downloadForm()">
+    <form @submit.prevent="submit" class="form-stack">
+      <textarea
+        class="input-lg"
+        x-model="url"
+        rows="5"
+        placeholder="粘贴链接或整段分享文案（自动提取其中的 URL）"
+        required
+      ></textarea>
+      <div class="form-row form-row-tight">
+        <select x-model="engine">
+          <option value="">自动检测</option>
+          <option value="ytdlp">yt-dlp</option>
+          <option value="aria2">aria2</option>
+          <option value="alist">alist</option>
+        </select>
+        <button type="submit" :disabled="loading">
+          <span x-text="loading ? '提交中...' : '开始下载'"></span>
+        </button>
+      </div>
+      <p x-show="error" class="form-error" x-text="error"></p>
+    </form>
+  </div>
+
+  <div class="card card-grow">
+    <div class="task-panel-header panel-toolbar">
+      <h2>下载任务</h2>
+    </div>
+    <div class="panel-toolbar">
+      {% include "partials/task_tabs.html" %}
+    </div>
+    <div class="scroll-panel" id="task-list">
+      {% include "partials/task_table.html" %}
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTaskTab = 'active';
+let taskPollTimer = null;
+const taskTabCache = {};
+let taskFetchController = null;
+
+function apiHeaders(json) {
+  const h = json ? { 'Content-Type': 'application/json' } : {};
+  const apiKey = localStorage.getItem('api_key');
+  if (apiKey) h['X-API-Key'] = apiKey;
+  return h;
+}
+
+function downloadForm() {
+  return {
+    url: '',
+    engine: '',
+    loading: false,
+    error: '',
+    async submit() {
+      this.loading = true;
+      this.error = '';
+      try {
+        const body = { url: this.url };
+        if (this.engine) body.engine = this.engine;
+        const res = await fetch('/api/v1/downloads', {
+          method: 'POST',
+          headers: apiHeaders(true),
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.detail || '创建失败');
+        }
+        this.url = '';
+        invalidateTaskCache();
+        switchTaskTab('active');
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    }
+  };
+}
+
+function invalidateTaskCache(tab) {
+  if (tab) {
+    delete taskTabCache[tab];
+    return;
+  }
+  Object.keys(taskTabCache).forEach((k) => delete taskTabCache[k]);
+}
+
+function setActiveTabButton(tab) {
+  document.querySelectorAll('#task-tab-bar .tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+}
+
+function showTaskLoading() {
+  document.getElementById('task-list').innerHTML =
+    '<p class="task-loading">加载中…</p>';
+}
+
+async function loadTaskTable(tab, silent) {
+  if (taskFetchController) taskFetchController.abort();
+  taskFetchController = new AbortController();
+  const signal = taskFetchController.signal;
+
+  if (!silent && !taskTabCache[tab]) {
+    showTaskLoading();
+  }
+
+  try {
+    const res = await fetch(`/partials/tasks?tab=${encodeURIComponent(tab)}`, { signal });
+    if (!res.ok) return;
+    const html = await res.text();
+    taskTabCache[tab] = html;
+    if (currentTaskTab === tab) {
+      document.getElementById('task-list').innerHTML = html;
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    if (currentTaskTab === tab && !taskTabCache[tab]) {
+      document.getElementById('task-list').innerHTML =
+        '<p class="task-loading health-fail">加载失败，请重试</p>';
+    }
+  }
+}
+
+async function updateTabCounts() {
+  try {
+    const res = await fetch('/api/v1/tasks/counts', { headers: apiHeaders() });
+    if (!res.ok) return;
+    const counts = await res.json();
+    document.querySelectorAll('[data-count]').forEach((el) => {
+      const key = el.dataset.count;
+      if (counts[key] !== undefined) el.textContent = counts[key];
+    });
+  } catch (_) { /* ignore */ }
+}
+
+function startTaskPolling() {
+  if (taskPollTimer) clearInterval(taskPollTimer);
+  const interval = currentTaskTab === 'active' ? 3000 : 8000;
+  taskPollTimer = setInterval(() => {
+    loadTaskTable(currentTaskTab, true);
+    updateTabCounts();
+  }, interval);
+}
+
+function switchTaskTab(tab) {
+  currentTaskTab = tab;
+  setActiveTabButton(tab);
+
+  if (taskTabCache[tab]) {
+    document.getElementById('task-list').innerHTML = taskTabCache[tab];
+  } else {
+    showTaskLoading();
+  }
+
+  loadTaskTable(tab, false);
+  updateTabCounts();
+  startTaskPolling();
+}
+
+function refreshTaskList() {
+  invalidateTaskCache(currentTaskTab);
+  loadTaskTable(currentTaskTab, false);
+  updateTabCounts();
+}
+
+async function pauseTask(id) {
+  await fetch(`/api/v1/tasks/${id}/pause`, { method: 'POST', headers: apiHeaders() });
+  invalidateTaskCache();
+  refreshTaskList();
+}
+
+async function cancelTask(id) {
+  if (!confirm('确定取消该下载任务？')) return;
+  await fetch(`/api/v1/tasks/${id}/cancel`, { method: 'POST', headers: apiHeaders() });
+  invalidateTaskCache();
+  refreshTaskList();
+}
+
+async function deleteTask(id, deleteFile) {
+  const msg = deleteFile
+    ? '确定删除任务记录并删除本地文件？此操作不可恢复。'
+    : '确定删除该任务记录？（不删除本地文件）';
+  if (!confirm(msg)) return;
+  const res = await fetch(`/api/v1/tasks/${id}?delete_file=${deleteFile}`, {
+    method: 'DELETE',
+    headers: apiHeaders(),
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    alert(data.detail || '删除失败');
+  }
+  invalidateTaskCache();
+  refreshTaskList();
+}
+
+async function retryTask(url, sourceType) {
+  const engineMap = { ytdlp: 'ytdlp', aria2: 'aria2', alist: 'alist' };
+  const body = { url };
+  if (engineMap[sourceType]) body.engine = engineMap[sourceType];
+  const res = await fetch('/api/v1/downloads', {
+    method: 'POST',
+    headers: apiHeaders(true),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    alert(data.detail || '重试失败');
+    return;
+  }
+  invalidateTaskCache();
+  switchTaskTab('active');
+}
+
+function copyTaskPath(path) {
+  navigator.clipboard.writeText(path).then(() => {
+    alert('路径已复制');
+  }).catch(() => {
+    prompt('复制路径:', path);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const list = document.getElementById('task-list');
+  if (list) taskTabCache.active = list.innerHTML;
+  setActiveTabButton('active');
+  updateTabCounts();
+  startTaskPolling();
+});
+</script>
+{% endblock %}

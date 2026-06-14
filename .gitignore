@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.egg
+
+# Runtime data
+data/
+logs/
+*.log
+
+# Downloads (keep directory marker only)
+downloads/*
+!downloads/.gitkeep
+
+# Docker local data
+data/aria2/
+data/alist/
+
+# IDE / OS
+.idea/
+.vscode/
+.cursor/
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*

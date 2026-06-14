@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  MyDownloader launchd 服务模板（macOS 生产环境）
+
+  使用前请修改：
+  1. 下面三处 __PROJECT_ROOT__ 替换为实际路径，例如 /Users/you/MyDownloader
+  2. 若使用虚拟环境，将 python3 改为 __PROJECT_ROOT__/.venv/bin/python
+
+  安装：
+    cp deploy/mydownloader.plist ~/Library/LaunchAgents/com.mydownloader.service.plist
+    # 编辑 plist 中的路径
+    launchctl load ~/Library/LaunchAgents/com.mydownloader.service.plist
+
+  卸载：
+    launchctl unload ~/Library/LaunchAgents/com.mydownloader.service.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mydownloader.service</string>
+
+    <key>WorkingDirectory</key>
+    <string>__PROJECT_ROOT__</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__PROJECT_ROOT__/.venv/bin/python</string>
+        <string>-m</string>
+        <string>app.main</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>PYTHONUTF8</key>
+        <string>1</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>__PROJECT_ROOT__/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>__PROJECT_ROOT__/logs/launchd.err.log</string>
+</dict>
+</plist>

@@ -1,0 +1,61 @@
+<div class="component-grid">
+  {% for engine in engines %}
+  <div class="card component-card">
+    <div class="component-header">
+      <div>
+        <h3 class="component-title">{{ engine.display_name }}</h3>
+        <p class="component-desc">{{ engine.description }}</p>
+      </div>
+      <div class="component-badges">
+        {% if not engine.enabled %}
+        <span class="badge badge-paused">未启用</span>
+        {% elif engine.available %}
+        <span class="badge badge-completed">可用</span>
+        {% else %}
+        <span class="badge badge-failed">不可用</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <dl class="component-meta">
+      <div class="meta-row">
+        <dt>状态</dt>
+        <dd class="{% if engine.available %}health-ok{% else %}health-fail{% endif %}">
+          {{ engine.message or ('运行正常' if engine.available else '不可用') }}
+        </dd>
+      </div>
+      {% if engine.version %}
+      <div class="meta-row">
+        <dt>版本</dt>
+        <dd>{{ engine.version }}</dd>
+      </div>
+      {% endif %}
+      {% if engine.endpoint %}
+      <div class="meta-row">
+        <dt>地址 / 路径</dt>
+        <dd class="mono" title="{{ engine.endpoint }}">{{ engine.endpoint }}</dd>
+      </div>
+      {% endif %}
+      {% if engine.active_tasks > 0 %}
+      <div class="meta-row">
+        <dt>活跃任务</dt>
+        <dd>{{ engine.active_tasks }}</dd>
+      </div>
+      {% endif %}
+      <div class="meta-row">
+        <dt>支持</dt>
+        <dd>
+          {% for item in engine.supports %}
+          <span class="tag">{{ item }}</span>
+          {% endfor %}
+        </dd>
+      </div>
+    </dl>
+
+    <div class="component-actions">
+      <button class="small secondary" data-test-engine="{{ engine.name }}" onclick="testEngine('{{ engine.name }}')">检测连接</button>
+      <a href="/settings" class="btn small secondary" style="text-decoration:none;">去配置</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>

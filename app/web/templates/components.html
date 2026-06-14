@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}下载组件 - MyDownloader{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <div class="card card-static summary-bar">
+    <div class="summary-item">
+      <span class="summary-label">下载目录</span>
+      <span class="summary-value" title="{{ summary.download_dir }}">{{ summary.download_dir }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">最大并发</span>
+      <span class="summary-value">{{ summary.max_concurrent }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">组件状态</span>
+      <span class="summary-value">
+        <span class="health-ok">{{ summary.engines_available }}</span> / {{ summary.engines_total }} 可用
+      </span>
+    </div>
+    <div class="summary-actions">
+      <button class="secondary" onclick="refreshComponents()">刷新状态</button>
+      <a href="/settings" class="btn secondary">组件配置</a>
+    </div>
+  </div>
+
+  <div
+    class="scroll-panel scroll-panel-padded"
+    id="components-list"
+    hx-get="/partials/components"
+    hx-trigger="load, every 5s"
+    hx-swap="innerHTML"
+  >
+    {% include "partials/components_status.html" %}
+  </div>
+</div>
+
+<script>
+function apiHeaders() {
+  const h = {};
+  const apiKey = localStorage.getItem('api_key');
+  if (apiKey) h['X-API-Key'] = apiKey;
+  return h;
+}
+
+function refreshComponents() {
+  htmx.trigger('#components-list', 'htmx:load');
+}
+
+async function testEngine(name) {
+  const btn = document.querySelector(`[data-test-engine="${name}"]`);
+  if (btn) btn.disabled = true;
+  try {
+    await fetch(`/api/v1/engines/${name}/test`, { method: 'POST', headers: apiHeaders() });
+    refreshComponents();
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}

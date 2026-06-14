@@ -1,0 +1,84 @@
+{% if tasks %}
+<div class="task-table-wrap">
+  <table class="task-table">
+    <thead>
+      <tr>
+        <th class="col-id">ID</th>
+        <th class="col-name">名称 / URL</th>
+        <th class="col-engine">引擎</th>
+        {% if tab == 'completed' or tab == 'all' %}
+        <th class="col-size">大小</th>
+        <th class="col-time">完成时间</th>
+        {% endif %}
+        {% if tab == 'active' or tab == 'all' %}
+        <th class="col-progress">进度</th>
+        <th class="col-speed">速度</th>
+        {% endif %}
+        <th class="col-status">状态</th>
+        <th class="col-actions">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td class="col-id" data-label="ID">{{ task.id }}</td>
+        <td class="col-name" data-label="名称">
+          <div class="task-title">{{ task.title or task.url[:50] }}{% if task.url|length > 50 %}...{% endif %}</div>
+          {% if task.file_path and tab in ('completed', 'all') %}
+          <div class="task-path mono" title="{{ task.file_path }}">{{ task.file_path }}</div>
+          {% endif %}
+          {% if task.error_message and tab in ('failed', 'all', 'active') %}
+          <div class="error-msg">{{ task.error_message[:120] }}</div>
+          {% endif %}
+        </td>
+        <td class="col-engine" data-label="引擎">{{ task.source_type }}</td>
+        {% if tab == 'completed' or tab == 'all' %}
+        <td class="col-size" data-label="大小">{{ task.file_size | filesize }}</td>
+        <td class="col-time" data-label="完成时间">
+          {% if task.updated_at %}
+          <small>{{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+          {% else %}-{% endif %}
+        </td>
+        {% endif %}
+        {% if tab == 'active' or tab == 'all' %}
+        <td class="col-progress" data-label="进度">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ task.progress }}%"></div>
+          </div>
+          <small>{{ "%.1f"|format(task.progress) }}%</small>
+        </td>
+        <td class="col-speed" data-label="速度">{{ task.speed or '-' }}</td>
+        {% endif %}
+        <td class="col-status" data-label="状态">
+          <span class="badge badge-{{ task.status }}">{{ task.status }}</span>
+        </td>
+        <td class="col-actions" data-label="操作">
+          <div class="task-actions">
+          {% if task.status == 'running' %}
+          <button type="button" class="small secondary" onclick="pauseTask({{ task.id }})">暂停</button>
+          {% endif %}
+          {% if task.status in ('running', 'pending', 'paused') %}
+          <button type="button" class="small danger" onclick="cancelTask({{ task.id }})">取消</button>
+          {% endif %}
+          {% if task.file_path %}
+          <button type="button" class="small secondary" data-path="{{ task.file_path }}" onclick="copyTaskPath(this.dataset.path)">复制路径</button>
+          {% endif %}
+          {% if task.status == 'failed' %}
+          <button type="button" class="small secondary" data-url="{{ task.url }}" data-engine="{{ task.source_type }}" onclick="retryTask(this.dataset.url, this.dataset.engine)">重试</button>
+          {% endif %}
+          {% if task.status in ('completed', 'failed', 'cancelled') %}
+          <button type="button" class="small danger" onclick="deleteTask({{ task.id }}, false)">删除记录</button>
+          {% if task.file_path and task.status == 'completed' %}
+          <button type="button" class="small danger" onclick="deleteTask({{ task.id }}, true)">删文件</button>
+          {% endif %}
+          {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty-hint">暂无{{ '进行中' if tab == 'active' else '下载完成' if tab == 'completed' else '失败/取消' if tab == 'failed' else '' }}任务</p>
+{% endif %}

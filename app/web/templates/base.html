@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}MyDownloader{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css?v=10">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>MyDownloader</h1>
+      <nav>
+        <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">仪表盘</a>
+        <a href="/files" class="{% if request.url.path == '/files' %}active{% endif %}">文件</a>
+        <a href="/media" class="{% if request.url.path == '/media' %}active{% endif %}">多媒体</a>
+        <a href="/components" class="{% if request.url.path == '/components' %}active{% endif %}">组件</a>
+        <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">设置</a>
+        <a href="/docs" target="_blank">API</a>
+      </nav>
+    </header>
+    <main class="page-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

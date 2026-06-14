@@ -1,0 +1,36 @@
+<div class="install-help" x-data="{ tab: 'docker', open: false }">
+  <button type="button" class="install-help-toggle" @click="open = !open" :aria-expanded="open">
+    <span>安装帮助</span>
+    <span class="settings-item-chevron" :class="{ 'is-open': open }" aria-hidden="true"></span>
+  </button>
+  <div class="install-help-body" x-show="open" x-cloak>
+    <div class="install-help-tabs">
+      <button type="button" class="install-tab" :class="{ active: tab === 'docker' }" @click="tab = 'docker'">Docker</button>
+      <button type="button" class="install-tab" :class="{ active: tab === 'mac' }" @click="tab = 'mac'">macOS</button>
+      <button type="button" class="install-tab" :class="{ active: tab === 'win' }" @click="tab = 'win'">Windows</button>
+    </div>
+    <div x-show="tab === 'docker'" class="install-help-content">
+      <p class="install-help-lead">项目已提供 compose，生产环境推荐：</p>
+      <pre class="install-code">cd MyDownloader
+docker compose up -d aria2</pre>
+      <p class="field-hint">默认 RPC：<code>http://127.0.0.1:6800/jsonrpc</code>，Secret：<code>mydownloader</code>（与 compose 中 RPC_SECRET 一致）。</p>
+    </div>
+    <div x-show="tab === 'mac'" class="install-help-content">
+      <pre class="install-code">brew install aria2
+
+# 本机 RPC（需自行保持运行）
+aria2c --enable-rpc --rpc-listen-port=6800 \
+  --rpc-listen-all=false --continue</pre>
+      <p class="field-hint">或：<code>./scripts/install-mac.sh --with-docker</code></p>
+    </div>
+    <div x-show="tab === 'win'" class="install-help-content">
+      <pre class="install-code">scoop install aria2
+# 或
+choco install aria2
+
+# 启动 RPC（示例）
+aria2c --enable-rpc --rpc-listen-port=6800</pre>
+      <p class="field-hint">确保 RPC 端口与上方配置一致，Secret 两边配置相同。</p>
+    </div>
+  </div>
+</div>

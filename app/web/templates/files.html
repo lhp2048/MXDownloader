@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}文件 - MyDownloader{% endblock %}
+{% block content %}
+<div class="page-stack" x-data="filesPage()" x-init="init()">
+  <div class="card card-static files-toolbar-card">
+    <div class="panel-toolbar">
+      <h2>下载文件</h2>
+      <div class="toolbar-actions">
+        <button class="secondary" type="button" @click="refresh()" :disabled="loading">刷新</button>
+      </div>
+    </div>
+    <p class="files-hint">
+      存储目录：<code class="path-code">{{ listing.root }}</code>
+      {% if settings.files.public_access %}
+      <span class="badge badge-ok">外链可访问</span>
+      {% else %}
+      <span class="badge badge-muted">外链需 API Key</span>
+      {% endif %}
+    </p>
+    <p class="files-hint muted">
+      局域网访问请将 <code>config.yaml</code> 中 <code>server.host</code> 设为 <code>0.0.0.0</code>；
+      外网或反向代理可配置 <code>files.public_base_url</code> 生成正确下载链接。
+    </p>
+    <nav class="file-breadcrumb" aria-label="路径">
+      <a href="#" @click.prevent="go('')">根目录</a>
+      <template x-for="(part, i) in breadcrumbParts" :key="i">
+        <span class="breadcrumb-sep">/</span>
+        <a href="#" @click.prevent="go(breadcrumbPath(i))" x-text="part"></a>
+      </template>
+    </nav>
+    <p x-show="error" class="form-error" x-text="error"></p>
+  </div>
+
+  <div class="card card-grow file-list-card">
+    <div class="scroll-panel">
+      <div class="task-table-wrap file-table-wrap">
+      <table class="task-table file-table">
+        <thead>
+          <tr>
+            <th class="col-name">名称</th>
+            <th class="col-size">大小</th>
+            <th class="col-time">修改时间</th>
+            <th class="col-actions">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-if="loading && entries.length === 0">
+            <tr class="file-row-empty"><td colspan="4" class="empty-cell">加载中...</td></tr>
+          </template>
+          <template x-if="!loading && entries.length === 0">
+            <tr class="file-row-empty"><td colspan="4" class="empty-cell">此目录为空</td></tr>
+          </template>
+          <template x-for="entry in entries" :key="entry.path">
+            <tr>
+              <td class="col-name" data-label="名称">
+                <div class="file-name-inner">
+                  <span class="file-type-icon" aria-hidden="true" x-text="entry.is_dir ? '📁' : '📄'"></span>
+                  <button
+                    type="button"
+                    class="file-name-link"
+                    x-show="entry.is_dir"
+                    @click="go(entry.path)"
+                    :title="entry.name"
+                    x-text="entry.name"
+                  ></button>
+                  <span
+                    class="file-name-text"
+                    x-show="!entry.is_dir"
+                    :title="entry.name"
+                    x-text="entry.name"
+                  ></span>
+                </div>
+              </td>
+              <td class="col-size" data-label="大小">
+                <span class="file-meta" x-text="entry.is_dir ? '—' : formatSize(entry.size)"></span>
+              </td>
+              <td class="col-time" data-label="修改时间">
+                <span class="file-meta" x-text="formatTime(entry.modified_at)"></span>
+              </td>
+              <td class="col-actions" data-label="操作">
+                <div class="task-actions">
+                  <a
+                    x-show="!entry.is_dir"
+                    :href="entry.public_url"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn small secondary"
+                  >下载</a>
+                  <button
+                    type="button"
+                    class="small secondary"
+                    x-show="!entry.is_dir"
+                    @click="copyUrl(entry.public_url)"
+                  >复制链接</button>
+                  <button
+                    type="button"
+                    class="small secondary"
+                    x-show="entry.is_dir"
+                    @click="go(entry.path)"
+                  >打开</button>
+                  <button type="button" class="small danger" @click="deleteFile(entry)">删除</button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function apiHeaders(json) {
+  const h = json ? { 'Content-Type': 'application/json' } : {};
+  const apiKey = localStorage.getItem('api_key');
+  if (apiKey) h['X-API-Key'] = apiKey;
+  return h;
+}
+
+function filesPage() {
+  const initial = {{ listing_json | safe }};
+  return {
+    root: initial.root || '',
+    currentPath: initial.path || '',
+    entries: initial.entries || [],
+    loading: false,
+    error: '',
+    breadcrumbParts: [],
+    init() {
+      this.syncBreadcrumb();
+    },
+    syncBreadcrumb() {
+      this.breadcrumbParts = this.currentPath
+        ? this.currentPath.split('/').filter(Boolean)
+        : [];
+    },
+    breadcrumbPath(index) {
+      return this.breadcrumbParts.slice(0, index + 1).join('/');
+    },
+    formatSize(bytes) {
+      if (!bytes) return '-';
+      const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+      let size = bytes;
+      let i = 0;
+      while (size >= 1024 && i < units.length - 1) {
+        size /= 1024;
+        i++;
+      }
+      return i === 0 ? `${size} B` : `${size.toFixed(1)} ${units[i]}`;
+    },
+    formatTime(ts) {
+      if (!ts) return '-';
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '-';
+      return d.toLocaleString('zh-CN', { hour12: false });
+    },
+    async go(path) {
+      this.currentPath = path || '';
+      this.syncBreadcrumb();
+      await this.refresh();
+    },
+    async refresh() {
+      this.loading = true;
+      this.error = '';
+      try {
+        const q = this.currentPath ? `?path=${encodeURIComponent(this.currentPath)}` : '';
+        const res = await fetch(`/api/v1/files${q}`, { headers: apiHeaders() });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '加载失败');
+        }
+        const data = await res.json();
+        this.root = data.root;
+        this.currentPath = data.path || '';
+        this.entries = data.entries || [];
+        this.syncBreadcrumb();
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async copyUrl(url) {
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        this.error = '';
+      } catch {
+        this.error = '复制失败，请手动复制：' + url;
+      }
+    },
+    async deleteFile(entry) {
+      const label = entry.is_dir ? '文件夹' : '文件';
+      if (!confirm(`确定删除${label}「${entry.name}」？此操作不可恢复。`)) return;
+      this.error = '';
+      try {
+        const res = await fetch(`/api/v1/files?path=${encodeURIComponent(entry.path)}`, {
+          method: 'DELETE',
+          headers: apiHeaders(),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || '删除失败');
+        }
+        await this.refresh();
+      } catch (e) {
+        this.error = e.message;
+      }
+    },
+  };
+}
+</script>
+{% endblock %}

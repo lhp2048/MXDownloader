@@ -1,0 +1,30 @@
+<div class="install-help" x-data="{ tab: 'docker', open: false }">
+  <button type="button" class="install-help-toggle" @click="open = !open" :aria-expanded="open">
+    <span>安装帮助</span>
+    <span class="settings-item-chevron" :class="{ 'is-open': open }" aria-hidden="true"></span>
+  </button>
+  <div class="install-help-body" x-show="open" x-cloak>
+    <div class="install-help-tabs">
+      <button type="button" class="install-tab" :class="{ active: tab === 'docker' }" @click="tab = 'docker'">Docker</button>
+      <button type="button" class="install-tab" :class="{ active: tab === 'mac' }" @click="tab = 'mac'">macOS</button>
+    </div>
+    <div x-show="tab === 'docker'" class="install-help-content">
+      <p class="install-help-lead">Alist 建议通过 Docker 部署：</p>
+      <pre class="install-code">cd MyDownloader
+docker compose up -d alist
+
+# 同时启动 aria2 + alist
+docker compose up -d</pre>
+      <ol class="install-steps">
+        <li>访问 <code>http://127.0.0.1:5244</code></li>
+        <li>首次启动查看容器日志获取管理员密码</li>
+        <li>登录后台 → 设置 → 获取 Token</li>
+        <li>在本页填写服务地址与 Token，并勾选「启用」</li>
+      </ol>
+    </div>
+    <div x-show="tab === 'mac'" class="install-help-content">
+      <pre class="install-code">./scripts/install-mac.sh --with-docker</pre>
+      <p class="field-hint">或单独：<code>docker compose up -d alist</code>。详见项目 <code>docs/DEPLOY_MAC.md</code>。</p>
+    </div>
+  </div>
+</div>

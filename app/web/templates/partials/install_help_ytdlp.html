@@ -1,0 +1,34 @@
+<div class="install-help" x-data="{ tab: 'pip', open: false }">
+  <button type="button" class="install-help-toggle" @click="open = !open" :aria-expanded="open">
+    <span>安装帮助</span>
+    <span class="settings-item-chevron" :class="{ 'is-open': open }" aria-hidden="true"></span>
+  </button>
+  <div class="install-help-body" x-show="open" x-cloak>
+    <div class="install-help-tabs">
+      <button type="button" class="install-tab" :class="{ active: tab === 'pip' }" @click="tab = 'pip'">pip</button>
+      <button type="button" class="install-tab" :class="{ active: tab === 'mac' }" @click="tab = 'mac'">macOS</button>
+      <button type="button" class="install-tab" :class="{ active: tab === 'win' }" @click="tab = 'win'">Windows</button>
+    </div>
+    <div x-show="tab === 'pip'" class="install-help-content">
+      <p class="install-help-lead">推荐方式，与 MyDownloader 同一 Python 环境：</p>
+      <pre class="install-code">pip install -U yt-dlp
+yt-dlp --version</pre>
+      <p class="field-hint">配置中路径填写 <code>yt-dlp</code> 即可（若在 PATH 中）。</p>
+    </div>
+    <div x-show="tab === 'mac'" class="install-help-content">
+      <pre class="install-code">brew install yt-dlp
+yt-dlp --version</pre>
+      <p class="field-hint">或使用项目脚本：<code>./scripts/install-mac.sh</code></p>
+    </div>
+    <div x-show="tab === 'win'" class="install-help-content">
+      <pre class="install-code">pip install -U yt-dlp
+
+# 或 Scoop
+scoop install yt-dlp
+
+# 或 Chocolatey
+choco install yt-dlp</pre>
+      <p class="field-hint">安装后可在命令行执行 <code>yt-dlp --version</code> 验证。</p>
+    </div>
+  </div>
+</div>

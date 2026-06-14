@@ -1,0 +1,27 @@
+services:
+  aria2:
+    image: p3terx/aria2-pro:latest
+    container_name: mydownloader-aria2
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - RPC_SECRET=mydownloader
+      - RPC_PORT=6800
+    ports:
+      - "6800:6800"
+    volumes:
+      - ./data/aria2:/config
+      - ./data/downloads:/downloads
+
+  alist:
+    image: xhofe/alist:latest
+    container_name: mydownloader-alist
+    restart: unless-stopped
+    ports:
+      - "5244:5244"
+    volumes:
+      - ./data/alist:/opt/alist/data
+    environment:
+      - PUID=1000
+      - PGID=1000

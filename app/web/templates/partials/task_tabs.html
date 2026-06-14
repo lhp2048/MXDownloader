@@ -1,0 +1,14 @@
+<div class="tab-bar" id="task-tab-bar">
+  <button type="button" class="tab-btn active" data-tab="active" onclick="switchTaskTab('active')">
+    进行中 <span class="tab-count" data-count="active">{{ counts.active }}</span>
+  </button>
+  <button type="button" class="tab-btn" data-tab="completed" onclick="switchTaskTab('completed')">
+    下载完成 <span class="tab-count" data-count="completed">{{ counts.completed }}</span>
+  </button>
+  <button type="button" class="tab-btn" data-tab="failed" onclick="switchTaskTab('failed')">
+    失败/取消 <span class="tab-count" data-count="failed">{{ counts.failed }}</span>
+  </button>
+  <button type="button" class="tab-btn" data-tab="all" onclick="switchTaskTab('all')">
+    全部 <span class="tab-count" data-count="all">{{ counts.all }}</span>
+  </button>
+</div>
