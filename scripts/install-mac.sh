@@ -39,13 +39,24 @@ source "$SCRIPT_DIR/lib/python.sh"
 
 log() { echo "[install-mac] $*"; }
 
+macos_major() {
+    sw_vers -productVersion 2>/dev/null | cut -d. -f1
+}
+
 if [[ "$SKIP_BREW" -eq 0 ]] && command -v brew >/dev/null 2>&1; then
-    if ! resolve_project_python "$PROJECT_ROOT"; then
-        log "未找到 Python 3.10+，尝试 brew install python@3.12 ..."
-        try_brew_install_python || true
+    MACOS_MAJOR="$(macos_major)"
+    if [[ -z "$MACOS_MAJOR" || "$MACOS_MAJOR" -ge 13 ]]; then
+        if ! resolve_project_python "$PROJECT_ROOT"; then
+            log "未找到 Python 3.10+，尝试 brew install python@3.12 ..."
+            try_brew_install_python || true
+        fi
+    else
+        log "macOS $MACOS_MAJOR：跳过 brew 安装 Python（Monterey 等旧系统请用 python.org 安装包）"
+        log "  https://www.python.org/downloads/macos/"
     fi
-    log "通过 Homebrew 安装 yt-dlp、aria2（已安装则跳过）..."
-    brew install yt-dlp aria2 || true
+    log "尝试 Homebrew 安装 aria2（可选，失败可改用 Docker）..."
+    brew install aria2 2>/dev/null || log "aria2 brew 安装未成功，可用: docker compose up -d aria2"
+    log "yt-dlp 将通过 pip 安装（macOS 12 上勿用 brew install yt-dlp）"
 fi
 
 if ! resolve_project_python "$PROJECT_ROOT"; then
@@ -76,6 +87,12 @@ log "安装 Python 依赖..."
 pip install -U pip setuptools wheel
 pip install -e .
 pip install yt-dlp
+
+YTDLP_VENV="$PROJECT_ROOT/.venv/bin/yt-dlp"
+if [[ -x "$YTDLP_VENV" ]]; then
+    log "yt-dlp 已安装: $YTDLP_VENV"
+    log "若设置页检测不到，将 ytdlp_path 设为: $YTDLP_VENV"
+fi
 
 mkdir -p "$PROJECT_ROOT/downloads" "$PROJECT_ROOT/logs" "$PROJECT_ROOT/data"
 

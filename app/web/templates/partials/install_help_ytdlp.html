@@ -10,10 +10,10 @@
       <button type="button" class="install-tab" :class="{ active: tab === 'win' }" @click="tab = 'win'">Windows</button>
     </div>
     <div x-show="tab === 'pip'" class="install-help-content">
-      <p class="install-help-lead">推荐方式，与 MyDownloader 同一 Python 环境：</p>
+      <p class="install-help-lead">推荐方式（macOS 12 请用 pip，勿用 brew yt-dlp）：</p>
       <pre class="install-code">pip install -U yt-dlp
 yt-dlp --version</pre>
-      <p class="field-hint">配置中路径填写 <code>yt-dlp</code> 即可（若在 PATH 中）。</p>
+      <p class="field-hint">安装脚本已自动 pip 安装；路径可填 <code>.venv/bin/yt-dlp</code> 的完整路径。</p>
     </div>
     <div x-show="tab === 'mac'" class="install-help-content">
       <pre class="install-code">brew install yt-dlp

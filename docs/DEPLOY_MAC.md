@@ -249,6 +249,35 @@ tail -f logs/launchd.out.log logs/launchd.err.log
 
 ## 七、常见问题
 
+**Q: brew install yt-dlp 报错 deno / Xcode 15？**
+
+macOS 12（Monterey）上 **不要用 brew 装 yt-dlp**。用 pip（`install-mac.sh` 已自动执行）：
+
+```bash
+source .venv/bin/activate
+pip install -U yt-dlp
+```
+
+在 Web **设置 → yt-dlp** 中，路径填：
+
+```text
+/Users/你的用户名/MXDownloader/.venv/bin/yt-dlp
+```
+
+**Q: macOS 12 安装 Python / Homebrew 很慢或失败？**
+
+不要用 `brew install python@3.12`（可能编译数小时）。改用官方安装包：
+
+1. https://www.python.org/downloads/macos/ 下载 Python 3.12
+2. 安装后执行：
+
+```bash
+/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 --version
+cd ~/MXDownloader
+rm -rf .venv
+./scripts/install-mac.sh --skip-brew
+```
+
 **Q: pip install 报错 requires Python >=3.10，当前 3.9.6？**
 
 系统自带 Python 太旧。安装并使用 Homebrew Python：
