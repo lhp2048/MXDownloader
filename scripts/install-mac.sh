@@ -69,6 +69,10 @@ mkdir -p "$PROJECT_ROOT/downloads" "$PROJECT_ROOT/logs" "$PROJECT_ROOT/data"
 
 chmod +x "$PROJECT_ROOT/scripts/start.sh" "$PROJECT_ROOT/start.command" 2>/dev/null || true
 chmod +x "$PROJECT_ROOT/scripts/install-mac.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/scripts/install-launchd.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/scripts/restart.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/restart.command" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/install-launchd.command" 2>/dev/null || true
 
 log "检测组件..."
 python3 - <<'PY'
@@ -97,5 +101,7 @@ fi
 log "========================================"
 log "安装完成。"
 log "启动: ./scripts/start.sh  或双击 start.command"
-log "生产常驻: 见 docs/DEPLOY_MAC.md（launchd）"
+log "开机自启: ./scripts/install-launchd.sh  或双击 install-launchd.command"
+log "重启服务: ./scripts/restart.sh  或双击 restart.command"
+log "详见: docs/DEPLOY_MAC.md"
 log "========================================"

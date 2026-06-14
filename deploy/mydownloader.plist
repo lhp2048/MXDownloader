@@ -8,12 +8,11 @@
   2. 若使用虚拟环境，将 python3 改为 __PROJECT_ROOT__/.venv/bin/python
 
   安装：
-    cp deploy/mydownloader.plist ~/Library/LaunchAgents/com.mydownloader.service.plist
-    # 编辑 plist 中的路径
-    launchctl load ~/Library/LaunchAgents/com.mydownloader.service.plist
+    ./scripts/install-launchd.sh
+    或双击 install-launchd.command
 
   卸载：
-    launchctl unload ~/Library/LaunchAgents/com.mydownloader.service.plist
+    ./scripts/install-launchd.sh --uninstall
 -->
 <plist version="1.0">
 <dict>

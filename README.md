@@ -82,6 +82,15 @@ engines:
 | macOS | 双击 `start.command` 或 `./scripts/start.sh` |
 | 通用 | `python -m app.main` 或 `mydownloader` |
 
+**macOS 开机自启 / 重启**
+
+```bash
+./scripts/install-launchd.sh   # 登录自启 + 崩溃拉起
+./scripts/restart.sh           # 重启服务
+```
+
+或双击 `install-launchd.command`、`restart.command`。
+
 访问：**http://127.0.0.1:8766**
 
 ### 5. Docker（aria2 + Alist）
