@@ -39,19 +39,21 @@ source "$SCRIPT_DIR/lib/python.sh"
 
 log() { echo "[install-mac] $*"; }
 
-macos_major() {
-    sw_vers -productVersion 2>/dev/null | cut -d. -f1
+_get_macos_major() {
+    sw_vers -productVersion 2>/dev/null | cut -d. -f1 || true
 }
 
+MACOS_MAJOR=""
+
 if [[ "$SKIP_BREW" -eq 0 ]] && command -v brew >/dev/null 2>&1; then
-    MACOS_MAJOR="$(macos_major)"
-    if [[ -z "$MACOS_MAJOR" || "$MACOS_MAJOR" -ge 13 ]]; then
+    MACOS_MAJOR="$(_get_macos_major)"
+    if [[ -z "${MACOS_MAJOR}" ]] || [[ "${MACOS_MAJOR}" -ge 13 ]]; then
         if ! resolve_project_python "$PROJECT_ROOT"; then
             log "未找到 Python 3.10+，尝试 brew install python@3.12 ..."
             try_brew_install_python || true
         fi
     else
-        log "macOS $MACOS_MAJOR：跳过 brew 安装 Python（Monterey 等旧系统请用 python.org 安装包）"
+        log "macOS ${MACOS_MAJOR}：跳过 brew 安装 Python（Monterey 等旧系统请用 python.org 安装包）"
         log "  https://www.python.org/downloads/macos/"
     fi
     log "尝试 Homebrew 安装 aria2（可选，失败可改用 Docker）..."
