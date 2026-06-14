@@ -8,6 +8,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# shellcheck source=lib/python.sh
+source "$SCRIPT_DIR/lib/python.sh"
+
 LABEL="com.mydownloader.service"
 PLIST_DST="$HOME/Library/LaunchAgents/${LABEL}.plist"
 UID_NUM="$(id -u)"
@@ -23,13 +26,18 @@ log() {
 }
 
 get_port() {
-    if [[ -x "$PROJECT_ROOT/.venv/bin/python" ]]; then
-        "$PROJECT_ROOT/.venv/bin/python" -c \
-            "from app.config import load_settings; print(load_settings().server.port)" \
-            2>/dev/null || echo "8766"
+    local py_bin
+    if resolve_project_python "$PROJECT_ROOT"; then
+        py_bin="$RESOLVED_PYTHON_BIN"
+    elif [[ -x "$PROJECT_ROOT/.venv/bin/python" ]]; then
+        py_bin="$PROJECT_ROOT/.venv/bin/python"
     else
         echo "8766"
+        return
     fi
+    "$py_bin" -c \
+        "from app.config import load_settings; print(load_settings().server.port)" \
+        2>/dev/null || echo "8766"
 }
 
 stop_port_listener() {
@@ -49,14 +57,14 @@ stop_port_listener() {
 start_background() {
     local port host python_bin
     port="$(get_port)"
-    if [[ -x "$PROJECT_ROOT/.venv/bin/python" ]]; then
-        python_bin="$PROJECT_ROOT/.venv/bin/python"
-    elif command -v python3 >/dev/null 2>&1; then
-        python_bin="python3"
-    else
-        log "未找到 Python，请先 ./scripts/install-mac.sh"
+
+    if ! resolve_project_python "$PROJECT_ROOT"; then
+        log "未找到 Python 3.10+，请先 ./scripts/install-mac.sh"
+        print_python_install_help "[restart] "
         exit 1
     fi
+    python_bin="$RESOLVED_PYTHON_BIN"
+    log "使用 Python $RESOLVED_PYTHON_VER ($python_bin)"
 
     host="$("$python_bin" -c "from app.config import load_settings; print(load_settings().server.host)" 2>/dev/null || echo "127.0.0.1")"
 

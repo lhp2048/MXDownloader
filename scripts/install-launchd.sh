@@ -28,6 +28,10 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# shellcheck source=lib/python.sh
+source "$SCRIPT_DIR/lib/python.sh"
+
 LABEL="com.mydownloader.service"
 PLIST_NAME="${LABEL}.plist"
 PLIST_SRC="$PROJECT_ROOT/deploy/mydownloader.plist"
@@ -66,6 +70,15 @@ if [[ ! -x "$PYTHON_BIN" ]]; then
     log "请先执行: ./scripts/install-mac.sh"
     exit 1
 fi
+
+if ! _python_version_ok "$PYTHON_BIN"; then
+    VENV_VER="$(_python_version_string "$PYTHON_BIN")"
+    log "虚拟环境 Python $VENV_VER 过低（需要 >= 3.10）"
+    log "请执行: rm -rf .venv && ./scripts/install-mac.sh"
+    exit 1
+fi
+
+log "Python $(_python_version_string "$PYTHON_BIN"): $PYTHON_BIN"
 
 mkdir -p "$PROJECT_ROOT/logs" "$HOME/Library/LaunchAgents"
 

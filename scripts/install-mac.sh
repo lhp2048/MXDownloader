@@ -20,7 +20,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "用法: $0 [--with-docker] [--skip-brew]"
             echo "  --with-docker  安装后启动 docker-compose（aria2 + Alist）"
-            echo "  --skip-brew    不通过 Homebrew 安装 yt-dlp / aria2"
+            echo "  --skip-brew    不通过 Homebrew 安装 python / yt-dlp / aria2"
             exit 0
             ;;
         *)
@@ -34,46 +34,32 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# shellcheck source=lib/python.sh
+source "$SCRIPT_DIR/lib/python.sh"
+
 log() { echo "[install-mac] $*"; }
 
-PYTHON_BIN=""
-for cmd in python3.12 python3.11 python3.10 python3; do
-    if command -v "$cmd" >/dev/null 2>&1; then
-        if "$cmd" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)'; then
-            PYTHON_BIN="$(command -v "$cmd")"
-            break
-        fi
-    fi
-done
-
-if [[ -z "$PYTHON_BIN" ]]; then
-    SYS_VER="$(python3 --version 2>/dev/null || echo '未安装')"
-    log "需要 Python 3.10+，当前默认 python3: $SYS_VER"
-    log "macOS 自带 Python 3.9 无法使用，请安装新版："
-    log "  brew install python@3.12"
-    log "  然后重新运行本脚本，或手动："
-    log "  /opt/homebrew/bin/python3.12 -m venv .venv   # Apple Silicon"
-    log "  /usr/local/bin/python3.12 -m venv .venv      # Intel Mac"
-    exit 1
-fi
-
-PY_VER="$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-log "使用 Python $PY_VER ($PYTHON_BIN)"
-
 if [[ "$SKIP_BREW" -eq 0 ]] && command -v brew >/dev/null 2>&1; then
-    if ! "$PYTHON_BIN" -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)'; then
-        log "尝试通过 Homebrew 安装 python@3.12 ..."
-        brew install python@3.12 || true
-        if command -v python3.12 >/dev/null 2>&1; then
-            PYTHON_BIN="$(command -v python3.12)"
-            PY_VER="$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-            log "已切换 Python $PY_VER ($PYTHON_BIN)"
-        fi
+    if ! resolve_project_python "$PROJECT_ROOT"; then
+        log "未找到 Python 3.10+，尝试 brew install python@3.12 ..."
+        try_brew_install_python || true
     fi
     log "通过 Homebrew 安装 yt-dlp、aria2（已安装则跳过）..."
     brew install yt-dlp aria2 || true
-elif [[ "$SKIP_BREW" -eq 0 ]]; then
-    log "未检测到 Homebrew，跳过 brew 安装。可手动: brew install python@3.12 yt-dlp aria2"
+fi
+
+if ! resolve_project_python "$PROJECT_ROOT"; then
+    print_python_install_help "[install-mac] "
+    exit 1
+fi
+
+PYTHON_BIN="$RESOLVED_PYTHON_BIN"
+log "选用 Python $RESOLVED_PYTHON_VER ($PYTHON_BIN)"
+
+if [[ -d "$PROJECT_ROOT/.venv" ]] && ! venv_python_ok "$PROJECT_ROOT"; then
+    VENV_VER="$(_python_version_string "$PROJECT_ROOT/.venv/bin/python" 2>/dev/null || echo '?')"
+    log "现有 .venv 为 Python $VENV_VER（< 3.10），将自动重建..."
+    rm -rf "$PROJECT_ROOT/.venv"
 fi
 
 if [[ ! -d "$PROJECT_ROOT/.venv" ]]; then
@@ -84,7 +70,7 @@ fi
 # shellcheck disable=SC1091
 source "$PROJECT_ROOT/.venv/bin/activate"
 
-log "venv Python: $(python -c 'import sys; print(sys.version.split()[0])')"
+log "venv Python: $(python -c 'import sys; print(sys.version.split()[0])') ($(command -v python))"
 
 log "安装 Python 依赖..."
 pip install -U pip setuptools wheel
@@ -93,6 +79,7 @@ pip install yt-dlp
 
 mkdir -p "$PROJECT_ROOT/downloads" "$PROJECT_ROOT/logs" "$PROJECT_ROOT/data"
 
+chmod +x "$PROJECT_ROOT/scripts/lib/python.sh" 2>/dev/null || true
 chmod +x "$PROJECT_ROOT/scripts/start.sh" "$PROJECT_ROOT/start.command" 2>/dev/null || true
 chmod +x "$PROJECT_ROOT/scripts/install-mac.sh" 2>/dev/null || true
 chmod +x "$PROJECT_ROOT/scripts/install-launchd.sh" 2>/dev/null || true

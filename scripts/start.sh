@@ -32,6 +32,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# shellcheck source=lib/python.sh
+source "$SCRIPT_DIR/lib/python.sh"
+
 LOG_DIR="$PROJECT_ROOT/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/mydownloader-$(date +%Y%m%d).log"
@@ -49,15 +52,13 @@ get_config_value() {
     "$PYTHON_BIN" -c "$expr" 2>/dev/null || echo "$default"
 }
 
-PYTHON_BIN=""
-if command -v python3 >/dev/null 2>&1; then
-    PYTHON_BIN="python3"
-elif command -v python >/dev/null 2>&1; then
-    PYTHON_BIN="python"
-else
-    write_log "未找到 python3/python，请先安装 Python 3.10+"
+if ! resolve_project_python "$PROJECT_ROOT"; then
+    write_log "未找到 Python 3.10+，请先运行: ./scripts/install-mac.sh"
+    print_python_install_help "[start] "
     exit 1
 fi
+
+PYTHON_BIN="$RESOLVED_PYTHON_BIN"
 
 PORT="$(get_config_value "from app.config import load_settings; print(load_settings().server.port)" "8766")"
 HOST="$(get_config_value "from app.config import load_settings; print(load_settings().server.host)" "127.0.0.1")"
@@ -66,7 +67,7 @@ write_log "========================================"
 write_log "MyDownloader 启动"
 write_log "项目目录: $PROJECT_ROOT"
 write_log "日志文件: $LOG_FILE"
-write_log "Python: $(command -v "$PYTHON_BIN")"
+write_log "Python $RESOLVED_PYTHON_VER: $PYTHON_BIN"
 
 stop_listener_on_port() {
     local port="$1"
