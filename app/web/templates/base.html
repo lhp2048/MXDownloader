@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{% block title %}MyDownloader{% endblock %}</title>
+  <title>{% block title %}Family Media Center{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css?v=10">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script defer src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js"></script>
@@ -11,7 +11,7 @@
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <h1>MyDownloader</h1>
+      <h1>Family Media Center</h1>
       <nav>
         <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">仪表盘</a>
         <a href="/files" class="{% if request.url.path == '/files' %}active{% endif %}">文件</a>

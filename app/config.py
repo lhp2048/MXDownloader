@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_FILE = PROJECT_ROOT / "config.yaml"
 DATA_DIR = PROJECT_ROOT / "data"
-DB_PATH = DATA_DIR / "mydownloader.db"
+DB_PATH = DATA_DIR / "family_mediacenter.db"
 DOWNLOAD_DIR = PROJECT_ROOT / "downloads"
 
 
@@ -85,7 +85,7 @@ class FilesSettings(BaseSettings):
 
 
 class AppSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="MYDOWNLOADER_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="FAMILY_MEDIACENTER_", extra="ignore")
 
     server: ServerSettings = Field(default_factory=ServerSettings)
     download: DownloadSettings = Field(default_factory=DownloadSettings)
@@ -111,9 +111,9 @@ def load_settings() -> AppSettings:
             if isinstance(loaded, dict):
                 data = loaded
 
-    env_url = os.environ.get("MYDOWNLOADER_URL")
+    env_url = os.environ.get("FAMILY_MEDIACENTER_URL")
     if env_url:
-        # MYDOWNLOADER_URL used by MCP; host/port can still override via env
+        # FAMILY_MEDIACENTER_URL used by MCP; host/port can still override via env
         pass
 
     s = AppSettings(**data)

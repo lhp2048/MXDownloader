@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 安装 MyDownloader WorkBuddy Skill
+# 安装 Family Media Center WorkBuddy Skill
 # 用法:
 #   ./scripts/install-workbuddy-skill.sh                    # 从本仓库复制
 #   ./scripts/install-workbuddy-skill.sh http://host:18026 # 从在线服务下载
@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-SKILL_NAME="mydownloader"
+SKILL_NAME="family-mediacenter"
 DEST="$HOME/.workbuddy/skills/$SKILL_NAME"
 BASE_URL="${1:-}"
 
@@ -33,8 +33,8 @@ install_from_local() {
 install_from_url() {
     local base="${BASE_URL%/}"
     mkdir -p "$DEST/references"
-    curl -fsSL "$base/skills/mydownloader/SKILL.md" -o "$DEST/SKILL.md"
-    curl -fsSL "$base/skills/mydownloader/references/api.md" -o "$DEST/references/api.md"
+    curl -fsSL "$base/skills/family-mediacenter/SKILL.md" -o "$DEST/SKILL.md"
+    curl -fsSL "$base/skills/family-mediacenter/references/api.md" -o "$DEST/references/api.md"
     log "已从 $base 下载安装"
 }
 

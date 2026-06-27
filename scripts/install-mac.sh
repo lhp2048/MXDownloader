@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MyDownloader macOS 环境安装（开发 / 生产首次部署）
+# Family Media Center macOS 环境安装（开发 / 生产首次部署）
 # 用法: ./scripts/install-mac.sh [--with-docker] [--skip-brew] [--with-mcp]
 
 set -euo pipefail
@@ -157,7 +157,7 @@ if [[ "$WITH_DOCKER" -eq 1 ]]; then
     fi
     log "启动 docker-compose（aria2 + Alist）..."
     docker compose -f "$PROJECT_ROOT/docker-compose.yml" up -d
-    log "请在 config.yaml 中配置 aria2.secret=mydownloader 并启用 alist"
+    log "请在 config.yaml 中配置 aria2.secret=family-mediacenter 并启用 alist"
 fi
 
 log "========================================"

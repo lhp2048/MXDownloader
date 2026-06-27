@@ -1,8 +1,8 @@
-# MXDownloader
+# Family Media Center
 
-本地统一下载与媒体管理服务：集成 **yt-dlp**（音视频）、**aria2**（HTTP/磁力/BT）、**Alist**（网盘），提供 Web 后台、文件管理、多媒体播放列表，以及 WorkBuddy Skill / MCP 集成。
+家庭统一下载与媒体管理服务（**:18026**）：集成 **yt-dlp**（音视频）、**aria2**（HTTP/磁力/BT）、**Alist**（网盘），提供 Web 后台、文件管理、多媒体播放列表，以及 WorkBuddy Skill / MCP 集成。
 
-> 仓库名 **MXDownloader**，Python 包名仍为 `mydownloader`。
+> GitHub 仓库 **[family-mediacenter](https://github.com/lhp2048/family-mediacenter)**；smart-family monorepo 内本地目录 **`family_mediacenter`**。Python 包名 `family_mediacenter`，CLI 命令 `family-mediacenter`。
 
 ## 功能概览
 
@@ -27,8 +27,8 @@
 ### 1. 克隆与安装
 
 ```bash
-git clone git@github.com:lhp2048/MXDownloader.git
-cd MXDownloader
+git clone git@github.com:lhp2048/family-mediacenter.git
+cd family-mediacenter
 pip install -e .
 pip install yt-dlp
 # Cursor MCP（可选，会安装 mcp + cryptography）
@@ -69,7 +69,7 @@ engines:
   ytdlp_path: yt-dlp
   aria2:
     rpc_url: http://127.0.0.1:6800/jsonrpc
-    secret: mydownloader   # 与 docker-compose 中 RPC_SECRET 一致
+    secret: family-mediacenter   # 与 docker-compose 中 RPC_SECRET 一致
   alist:
     enabled: false
     url: http://127.0.0.1:5244
@@ -82,7 +82,7 @@ engines:
 |------|------|
 | Windows | 双击 `start.bat` 或 `.\scripts\start.ps1` |
 | macOS | 双击 `start.command` 或 `./scripts/start.sh` |
-| 通用 | `python -m app.main` 或 `mydownloader` |
+| 通用 | `python -m app.main` 或 `family-mediacenter` |
 
 **macOS 开机自启 / 重启**
 
@@ -101,7 +101,7 @@ engines:
 docker compose up -d
 ```
 
-- aria2 RPC：`http://127.0.0.1:6800`，Secret：`mydownloader`
+- aria2 RPC：`http://127.0.0.1:6800`，Secret：`family-mediacenter`
 - Alist：http://127.0.0.1:5244（首次登录查看容器日志获取密码）
 
 ## Web 页面
@@ -138,16 +138,16 @@ curl http://127.0.0.1:18026/health
 
 配置了 `api_key` 时，写操作需请求头：`X-API-Key: <your-key>`
 
-完整 API 见 `skills/mydownloader/references/api.md`。
+完整 API 见 `skills/family-mediacenter/references/api.md`。
 
 ## WorkBuddy Skill
 
 ```bash
 mkdir -p ~/.workbuddy/skills
-cp -r skills/mydownloader ~/.workbuddy/skills/mydownloader
+cp -r skills/family-mediacenter ~/.workbuddy/skills/family-mediacenter
 ```
 
-支持下载任务与**播放列表管理**（见 `skills/mydownloader/SKILL.md`）。
+支持下载任务与**播放列表管理**（见 `skills/family-mediacenter/SKILL.md`）。
 
 ## Cursor MCP
 
@@ -156,12 +156,12 @@ cp -r skills/mydownloader ~/.workbuddy/skills/mydownloader
 ```json
 {
   "mcpServers": {
-    "mydownloader": {
+    "family-mediacenter": {
       "command": "python",
-      "args": ["/path/to/MXDownloader/mcp_server/server.py"],
+      "args": ["/path/to/family-mediacenter/mcp_server/server.py"],
       "env": {
-        "MYDOWNLOADER_URL": "http://127.0.0.1:18026",
-        "MYDOWNLOADER_API_KEY": ""
+        "FAMILY_MEDIACENTER_URL": "http://127.0.0.1:18026",
+        "FAMILY_MEDIACENTER_API_KEY": ""
       }
     }
   }
@@ -175,13 +175,13 @@ cp -r skills/mydownloader ~/.workbuddy/skills/mydownloader
 ## 项目结构
 
 ```
-MXDownloader/
+family-mediacenter/          # git clone 默认目录名
 ├── app/                 # FastAPI 应用
 │   ├── engines/         # yt-dlp, aria2, alist
 │   ├── services/        # 任务、文件、播放列表
 │   ├── api/             # REST + Web 路由
 │   └── web/             # 模板与静态资源
-├── skills/mydownloader/ # WorkBuddy Skill
+├── skills/family-mediacenter/ # WorkBuddy Skill
 ├── mcp_server/          # MCP Server
 ├── scripts/             # 启动与 macOS 安装脚本
 ├── deploy/              # launchd 模板（macOS）

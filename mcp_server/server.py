@@ -1,4 +1,4 @@
-"""MCP Server for MyDownloader - exposes download tools via Model Context Protocol."""
+"""MCP Server for Family Media Center - exposes download tools via Model Context Protocol."""
 
 import os
 import json
@@ -7,10 +7,10 @@ from typing import Optional
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-BASE_URL = os.environ.get("MYDOWNLOADER_URL", "http://127.0.0.1:18026")
-API_KEY = os.environ.get("MYDOWNLOADER_API_KEY", "")
+BASE_URL = os.environ.get("FAMILY_MEDIACENTER_URL", "http://127.0.0.1:18026")
+API_KEY = os.environ.get("FAMILY_MEDIACENTER_API_KEY", "")
 
-mcp = FastMCP("mydownloader")
+mcp = FastMCP("family-mediacenter")
 
 
 def _headers() -> dict[str, str]:
@@ -84,14 +84,14 @@ async def cancel_task(task_id: int) -> str:
 
 @mcp.tool()
 async def get_download_settings() -> str:
-    """Get MyDownloader service settings."""
+    """Get Family Media Center service settings."""
     result = await _request("GET", "/api/v1/settings")
     return json.dumps(result, ensure_ascii=False, indent=2)
 
 
 @mcp.tool()
 async def health_check() -> str:
-    """Check MyDownloader service and engine availability."""
+    """Check Family Media Center service and engine availability."""
     url = f"{BASE_URL.rstrip('/')}/health"
     async with httpx.AsyncClient(timeout=10.0) as client:
         r = await client.get(url)

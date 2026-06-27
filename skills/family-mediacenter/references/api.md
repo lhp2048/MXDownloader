@@ -1,4 +1,4 @@
-# MyDownloader API Reference
+# Family Media Center API Reference
 
 Base URL: `http://127.0.0.1:18026`
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 安装 / 卸载 MXDownloader launchd 开机自启服务（macOS）
+# 安装 / 卸载 Family Media Center launchd 开机自启服务（macOS）
 # 用法:
 #   ./scripts/install-launchd.sh          # 安装并启动
 #   ./scripts/install-launchd.sh --uninstall
@@ -32,9 +32,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=lib/python.sh
 source "$SCRIPT_DIR/lib/python.sh"
 
-LABEL="com.mydownloader.service"
+LABEL="com.family.mediacenter.service"
 PLIST_NAME="${LABEL}.plist"
-PLIST_SRC="$PROJECT_ROOT/deploy/mydownloader.plist"
+PLIST_SRC="$PROJECT_ROOT/deploy/family-mediacenter.plist"
 PLIST_DST="$HOME/Library/LaunchAgents/$PLIST_NAME"
 PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
 UID_NUM="$(id -u)"

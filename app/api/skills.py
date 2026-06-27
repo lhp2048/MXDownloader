@@ -6,7 +6,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, Response
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SKILL_DIR = PROJECT_ROOT / "skills" / "mydownloader"
+SKILL_NAME = "family-mediacenter"
+SKILL_DIR = PROJECT_ROOT / "skills" / SKILL_NAME
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 DEFAULT_BASE = "http://127.0.0.1:18026"
 
@@ -21,7 +22,7 @@ def _replace_base_url(content: str, base_url: str) -> str:
     return content.replace(DEFAULT_BASE, base_url)
 
 
-@router.get("/skills/mydownloader/SKILL.md")
+@router.get(f"/skills/{SKILL_NAME}/SKILL.md")
 async def get_skill_md(request: Request) -> Response:
     path = SKILL_DIR / "SKILL.md"
     if not path.is_file():
@@ -30,7 +31,7 @@ async def get_skill_md(request: Request) -> Response:
     return Response(content=content, media_type="text/markdown; charset=utf-8")
 
 
-@router.get("/skills/mydownloader/references/api.md")
+@router.get(f"/skills/{SKILL_NAME}/references/api.md")
 async def get_skill_api_ref(request: Request) -> Response:
     path = SKILL_DIR / "references" / "api.md"
     if not path.is_file():
@@ -39,7 +40,7 @@ async def get_skill_api_ref(request: Request) -> Response:
     return Response(content=content, media_type="text/markdown; charset=utf-8")
 
 
-@router.get("/skills/mydownloader/bundle.zip")
+@router.get(f"/skills/{SKILL_NAME}/bundle.zip")
 async def get_skill_bundle(request: Request) -> Response:
     base_url = _request_base_url(request)
     skill_md = _replace_base_url(
@@ -53,13 +54,13 @@ async def get_skill_bundle(request: Request) -> Response:
 
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr("mydownloader/SKILL.md", skill_md)
-        zf.writestr("mydownloader/references/api.md", api_md)
+        zf.writestr(f"{SKILL_NAME}/SKILL.md", skill_md)
+        zf.writestr(f"{SKILL_NAME}/references/api.md", api_md)
     buffer.seek(0)
     return Response(
         content=buffer.getvalue(),
         media_type="application/zip",
-        headers={"Content-Disposition": 'attachment; filename="mydownloader-skill.zip"'},
+        headers={"Content-Disposition": f'attachment; filename="{SKILL_NAME}-skill.zip"'},
     )
 
 

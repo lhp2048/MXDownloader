@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  MyDownloader launchd 服务模板（macOS 生产环境）
+  Family Media Center launchd 服务模板（macOS 生产环境）
 
   使用前请修改：
-  1. 下面三处 __PROJECT_ROOT__ 替换为实际路径，例如 /Users/you/MyDownloader
+  1. 下面三处 __PROJECT_ROOT__ 替换为实际路径，例如 /Users/you/family-mediacenter
   2. 若使用虚拟环境，将 python3 改为 __PROJECT_ROOT__/.venv/bin/python
 
   安装：
@@ -17,7 +17,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.mydownloader.service</string>
+    <string>com.family.mediacenter.service</string>
 
     <key>WorkingDirectory</key>
     <string>__PROJECT_ROOT__</string>

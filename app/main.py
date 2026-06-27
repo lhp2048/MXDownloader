@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="MyDownloader",
+    title="Family Media Center",
     description="Local download service with yt-dlp, aria2, and Alist",
     version="0.1.0",
     lifespan=lifespan,

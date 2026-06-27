@@ -1,4 +1,4 @@
-# Install MyDownloader WorkBuddy Skill
+# Install Family Media Center WorkBuddy Skill
 # Usage:
 #   .\scripts\install-workbuddy-skill.ps1
 #   .\scripts\install-workbuddy-skill.ps1 -BaseUrl "http://192.168.2.11:18026"
@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$SkillName = "mydownloader"
+$SkillName = "family-mediacenter"
 $Dest = Join-Path $env:USERPROFILE ".workbuddy\skills\$SkillName"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
@@ -38,8 +38,8 @@ function Install-FromUrl {
     param([string]$Base)
     $base = $Base.TrimEnd("/")
     New-Item -ItemType Directory -Force -Path (Join-Path $Dest "references") | Out-Null
-    Invoke-WebRequest -Uri "$base/skills/mydownloader/SKILL.md" -OutFile (Join-Path $Dest "SKILL.md") -UseBasicParsing
-    Invoke-WebRequest -Uri "$base/skills/mydownloader/references/api.md" -OutFile (Join-Path $Dest "references\api.md") -UseBasicParsing
+    Invoke-WebRequest -Uri "$base/skills/family-mediacenter/SKILL.md" -OutFile (Join-Path $Dest "SKILL.md") -UseBasicParsing
+    Invoke-WebRequest -Uri "$base/skills/family-mediacenter/references/api.md" -OutFile (Join-Path $Dest "references\api.md") -UseBasicParsing
     Write-Log "Downloaded and installed from $base"
 }
 

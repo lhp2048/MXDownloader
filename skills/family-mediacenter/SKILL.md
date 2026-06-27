@@ -1,19 +1,19 @@
 ---
-name: mydownloader
-description: 通过本地 MyDownloader 服务下载音视频、HTTP 文件、网盘资源，并管理多媒体播放列表（yt-dlp / aria2 / Alist）
-version: 1.1.0
-author: mydownloader
+name: family-mediacenter
+description: 通过本地 Family Media Center 服务下载音视频、HTTP 文件、网盘资源，并管理多媒体播放列表（yt-dlp / aria2 / Alist）
+version: 1.2.0
+author: family-mediacenter
 tags: [download, yt-dlp, aria2, alist, 网盘, 音视频, 多媒体, 播放列表]
 trigger_keywords: [下载, 音视频, 网盘, yt-dlp, 磁力, 离线下载, 多媒体, 播放列表, 轮播]
 ---
 
-# MyDownloader Skill
+# Family Media Center Skill
 
-通过本地 REST API 调用 MyDownloader 服务，统一下载音视频、HTTP 直链、磁力链接和网盘资源。
+通过本地 REST API 调用 Family Media Center 服务，统一下载音视频、HTTP 直链、磁力链接和网盘资源。
 
 ## 前置条件
 
-1. MyDownloader 服务已启动（默认 `http://127.0.0.1:18026`）
+1. Family Media Center 服务已启动（默认 `http://127.0.0.1:18026`）
 2. 支持直接粘贴分享文案，服务会自动提取其中的链接
 3. 对应引擎可用：
    - **yt-dlp**：YouTube、Bilibili、抖音等音视频站点

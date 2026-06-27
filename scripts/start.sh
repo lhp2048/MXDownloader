@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MyDownloader 启动脚本（macOS / Linux，控制台 + 日志文件）
+# Family Media Center 启动脚本（macOS / Linux，控制台 + 日志文件）
 
 set -euo pipefail
 
@@ -37,7 +37,7 @@ source "$SCRIPT_DIR/lib/python.sh"
 
 LOG_DIR="$PROJECT_ROOT/logs"
 mkdir -p "$LOG_DIR"
-LOG_FILE="$LOG_DIR/mydownloader-$(date +%Y%m%d).log"
+LOG_FILE="$LOG_DIR/family_mediacenter-$(date +%Y%m%d).log"
 
 write_log() {
     local message="$1"
@@ -64,7 +64,7 @@ PORT="$(get_config_value "from app.config import load_settings; print(load_setti
 HOST="$(get_config_value "from app.config import load_settings; print(load_settings().server.host)" "127.0.0.1")"
 
 write_log "========================================"
-write_log "MyDownloader 启动"
+write_log "Family Media Center 启动"
 write_log "项目目录: $PROJECT_ROOT"
 write_log "日志文件: $LOG_FILE"
 write_log "Python $RESOLVED_PYTHON_VER: $PYTHON_BIN"

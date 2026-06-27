@@ -1,12 +1,12 @@
 services:
   aria2:
     image: p3terx/aria2-pro:latest
-    container_name: mydownloader-aria2
+    container_name: family-mediacenter-aria2
     restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
-      - RPC_SECRET=mydownloader
+      - RPC_SECRET=family-mediacenter
       - RPC_PORT=6800
     ports:
       - "6800:6800"
@@ -16,7 +16,7 @@ services:
 
   alist:
     image: xhofe/alist:latest
-    container_name: mydownloader-alist
+    container_name: family-mediacenter-alist
     restart: unless-stopped
     ports:
       - "5244:5244"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 重启 MXDownloader 服务（macOS / Linux）
+# 重启 Family Media Center 服务（macOS / Linux）
 # 若已安装 launchd 服务则 kickstart；否则结束占用端口并后台启动
 
 set -euo pipefail
@@ -11,13 +11,13 @@ cd "$PROJECT_ROOT"
 # shellcheck source=lib/python.sh
 source "$SCRIPT_DIR/lib/python.sh"
 
-LABEL="com.mydownloader.service"
+LABEL="com.family.mediacenter.service"
 PLIST_DST="$HOME/Library/LaunchAgents/${LABEL}.plist"
 UID_NUM="$(id -u)"
 DOMAIN="gui/$UID_NUM"
 LOG_DIR="$PROJECT_ROOT/logs"
 mkdir -p "$LOG_DIR"
-LOG_FILE="$LOG_DIR/mydownloader-$(date +%Y%m%d).log"
+LOG_FILE="$LOG_DIR/family_mediacenter-$(date +%Y%m%d).log"
 
 log() {
     local line="[$(date '+%Y-%m-%d %H:%M:%S')] [restart] $*"

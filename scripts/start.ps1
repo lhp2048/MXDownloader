@@ -1,4 +1,4 @@
-# MyDownloader 启动脚本（控制台 + 日志文件）
+# Family Media Center 启动脚本（控制台 + 日志文件）
 param(
     [switch]$NoKillExisting
 )
@@ -10,7 +10,7 @@ Set-Location $ProjectRoot
 
 $LogDir = Join-Path $ProjectRoot "logs"
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$LogFile = Join-Path $LogDir ("mydownloader-{0:yyyyMMdd}.log" -f (Get-Date))
+$LogFile = Join-Path $LogDir ("family_mediacenter-{0:yyyyMMdd}.log" -f (Get-Date))
 
 function Write-Log {
     param([string]$Message, [string]$Color = "White")
@@ -42,7 +42,7 @@ function Stop-ListenerOnPort {
 }
 
 Write-Log "========================================" "Cyan"
-Write-Log "MyDownloader 启动" "Cyan"
+Write-Log "Family Media Center 启动" "Cyan"
 Write-Log "项目目录: $ProjectRoot" "Gray"
 Write-Log "日志文件: $LogFile" "Gray"
 

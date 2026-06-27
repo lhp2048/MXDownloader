@@ -1,7 +1,7 @@
 [project]
-name = "mydownloader"
+name = "family_mediacenter"
 version = "0.1.0"
-description = "Local download service with yt-dlp, aria2, and Alist support"
+description = "Family Media Center — local download and media management (yt-dlp, aria2, Alist)"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -21,7 +21,7 @@ dependencies = [
 mcp = ["mcp>=1.0.0"]
 
 [project.scripts]
-mydownloader = "app.main:run"
+family-mediacenter = "app.main:run"
 
 [build-system]
 requires = ["setuptools>=75.0"]
